@@ -1,0 +1,205 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LoadForecast — Figma Prototype</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+<section class="fig-screen" id="screen-reel">
+    <div class="fig-phone">
+        <header class="fig-header">
+            <span class="fig-header__logo">LoadForecast</span>
+        </header>
+        <div class="fig-reel">
+            <img class="fig-reel__bg" src="assets/peak.jpg" alt="Пиковая нагрузка">
+            <div class="fig-reel__overlay">
+                <div class="fig-reel__top">
+                    <span class="fig-badge fig-badge--peak">PEAK</span>
+                </div>
+                <div class="fig-reel__bottom">
+                    <h2 class="fig-reel__name">Пиковая нагрузка</h2>
+                    <div class="fig-reel__specs">
+                        <div class="fig-spec">
+                            <span class="fig-spec__label">Запросов/сек:</span>
+                            <span class="fig-spec__val">2000</span>
+                        </div>
+                        <div class="fig-spec">
+                            <span class="fig-spec__label">Пиковый множитель:</span>
+                            <span class="fig-spec__val">x5.0</span>
+                        </div>
+                        <div class="fig-spec">
+                            <span class="fig-spec__label">Длительность:</span>
+                            <span class="fig-spec__val">4 ч.</span>
+                        </div>
+                        <div class="fig-spec">
+                            <span class="fig-spec__label">Применение:</span>
+                            <span class="fig-spec__val">Распродажи</span>
+                        </div>
+                    </div>
+                    <details class="fig-reel__desc">
+                        <summary class="fig-reel__desc-toggle">Описание — подробнее</summary>
+                        <p class="fig-reel__desc-text">
+                            Резкий кратковременный всплеск запросов, превышающий
+                            базовый уровень в 5 и более раз. Типичен для
+                            онлайн-распродаж и ограниченных по времени акций.
+                            Требует автоматического горизонтального масштабирования.
+                        </p>
+                    </details>
+                    <div class="fig-reel__actions">
+                        <span class="fig-reel__likes">Нравится: 2</span>
+                        <a class="fig-reel__next-btn" href="#screen-grid">Следующий</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <nav class="fig-tabs">
+            <a class="fig-tabs__item fig-tabs__item--active" href="#screen-reel">
+                <span class="fig-tabs__label">Лента</span>
+            </a>
+            <a class="fig-tabs__item" href="#screen-form">
+                <span class="fig-tabs__label">Заявка</span>
+            </a>
+            <a class="fig-tabs__item" href="#screen-grid">
+                <span class="fig-tabs__label">Плитка</span>
+            </a>
+        </nav>
+    </div>
+    <p class="fig-screen__caption">Экран 1 — Лента</p>
+</section>
+<section class="fig-screen" id="screen-form">
+    <div class="fig-phone fig-phone--scroll">
+        <header class="fig-header">
+            <span class="fig-header__logo">LoadForecast</span>
+            <span class="fig-header__badge">Черновик</span>
+        </header>
+        <div class="fig-form-screen">
+            <h1 class="fig-form-screen__title">Заявка на расчёт ресурсов</h1>
+            <div class="fig-form-section">
+                <h2 class="fig-form-section__title">Медиафайлы</h2>
+                <img class="fig-form-screen__img" src="assets/ddos.jpg" alt="DDoS">
+                <div class="fig-field">
+                    <label class="fig-field__label">Ключ изображения (MinIO)</label>
+                    <input class="fig-field__input" type="text" value="ddos.jpg" readonly>
+                </div>
+                <div class="fig-field">
+                    <label class="fig-field__label">Ключ видео (MinIO)</label>
+                    <input class="fig-field__input" type="text" value="ddos.mp4" readonly>
+                </div>
+            </div>
+            <div class="fig-form-section">
+                <h2 class="fig-form-section__title">Параметры паттерна</h2>
+                <div class="fig-field">
+                    <label class="fig-field__label">Название заявки</label>
+                    <input class="fig-field__input" type="text" value="DDoS-атака" readonly>
+                </div>
+                <div class="fig-field">
+                    <label class="fig-field__label">Тип паттерна нагрузки</label>
+                    <select class="fig-field__select">
+                        <option>DDoS-атака</option>
+                        <option>Равномерная</option>
+                        <option>Пиковая</option>
+                        <option>Растущая</option>
+                    </select>
+                </div>
+                <div class="fig-field">
+                    <label class="fig-field__label">Базовый RPS (запросов/сек)</label>
+                    <input class="fig-field__input" type="number" value="50000" readonly>
+                </div>
+                <div class="fig-field">
+                    <label class="fig-field__label">Пиковый множитель</label>
+                    <input class="fig-field__input" type="number" value="100" readonly>
+                </div>
+                <div class="fig-field">
+                    <label class="fig-field__label">Длительность (часов)</label>
+                    <input class="fig-field__input" type="number" value="1" readonly>
+                </div>
+                <div class="fig-field">
+                    <label class="fig-field__label">Описание нагрузки</label>
+                    <textarea class="fig-field__textarea" rows="3" readonly>Атака типа DDoS — злоумышленное превышение допустимого числа запросов.</textarea>
+                </div>
+            </div>
+            <div class="fig-result">
+                <h3 class="fig-result__title">Результат расчёта</h3>
+                <p class="fig-result__subtitle">Эффективный RPS: <strong>5 000 000</strong></p>
+                <div class="fig-result__cards">
+                    <div class="fig-resource">
+                        <div class="fig-resource__label">CPU</div>
+                        <div class="fig-resource__value">25 000 ядер</div>
+                        <div class="fig-resource__formula">RPS x K / 200</div>
+                    </div>
+                    <div class="fig-resource">
+                        <div class="fig-resource__label">RAM</div>
+                        <div class="fig-resource__value">10 000 ГБ</div>
+                        <div class="fig-resource__formula">RPS x K / 500</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <nav class="fig-tabs">
+            <a class="fig-tabs__item" href="#screen-reel">
+                <span class="fig-tabs__label">Лента</span>
+            </a>
+            <a class="fig-tabs__item fig-tabs__item--active" href="#screen-form">
+                <span class="fig-tabs__label">Заявка</span>
+            </a>
+            <a class="fig-tabs__item" href="#screen-grid">
+                <span class="fig-tabs__label">Плитка</span>
+            </a>
+        </nav>
+    </div>
+    <p class="fig-screen__caption">Экран 2 — Заявка</p>
+</section>
+<section class="fig-screen" id="screen-grid">
+    <div class="fig-phone fig-phone--scroll">
+        <header class="fig-header">
+            <span class="fig-header__logo">LoadForecast</span>
+        </header>
+        <div class="fig-search">
+            <label class="fig-search__label">Макс. RPS:</label>
+            <input class="fig-search__input" type="number" placeholder="Например: 2000" value="2000">
+            <button class="fig-search__btn" type="submit">Найти</button>
+        </div>
+        <div class="fig-grid">
+            <a class="fig-tile" href="#screen-reel">
+                <img class="fig-tile__img" src="assets/uniform.jpg" alt="Равномерная нагрузка">
+                <div class="fig-tile__body">
+                    <span class="fig-tile__name">Равномерная нагрузка</span>
+                    <span class="fig-tile__rps">RPS: 500</span>
+                    <span class="fig-tile__likes">Нравится: 3</span>
+                </div>
+            </a>
+            <a class="fig-tile" href="#screen-reel">
+                <img class="fig-tile__img" src="assets/peak.jpg" alt="Пиковая нагрузка">
+                <div class="fig-tile__body">
+                    <span class="fig-tile__name">Пиковая нагрузка</span>
+                    <span class="fig-tile__rps">RPS: 2000</span>
+                    <span class="fig-tile__likes">Нравится: 2</span>
+                </div>
+            </a>
+            <a class="fig-tile" href="#screen-reel">
+                <img class="fig-tile__img" src="assets/growing.jpg" alt="Растущая нагрузка">
+                <div class="fig-tile__body">
+                    <span class="fig-tile__name">Растущая нагрузка</span>
+                    <span class="fig-tile__rps">RPS: 300</span>
+                    <span class="fig-tile__likes">Нравится: 4</span>
+                </div>
+            </a>
+        </div>
+        <nav class="fig-tabs">
+            <a class="fig-tabs__item" href="#screen-reel">
+                <span class="fig-tabs__label">Лента</span>
+            </a>
+            <a class="fig-tabs__item" href="#screen-form">
+                <span class="fig-tabs__label">Заявка</span>
+            </a>
+            <a class="fig-tabs__item fig-tabs__item--active" href="#screen-grid">
+                <span class="fig-tabs__label">Плитка</span>
+            </a>
+        </nav>
+    </div>
+    <p class="fig-screen__caption">Экран 3 — Плитка</p>
+</section>
+</body>
+</html>

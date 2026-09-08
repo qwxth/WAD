@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LoadForecast — {{ pattern.pattern_name }}</title>
+    <link rel="stylesheet" href="/static/css/style.css">
+</head>
+<body class="lf-body--detail">
+
+<header class="lf-header lf-header--dark">
+    <div class="lf-header__inner">
+        <a href="/patterns" class="lf-header__logo">LoadForecast</a>
+        <nav class="lf-header__nav">
+            <a href="/patterns" class="lf-header__nav-link">Паттерны</a>
+            <a href="/forecast" class="lf-header__nav-link">Заявка</a>
+        </nav>
+    </div>
+</header>
+
+<main class="lf-reel">
+    <div class="lf-reel__viewport">
+        <video class="lf-reel__video" autoplay loop muted playsinline>
+            <source src="{{ pattern.video_url }}" type="video/mp4">
+        </video>
+        <div class="lf-reel__overlay">
+            <span class="lf-reel__badge lf-card__badge--{{ pattern.pattern_code }}">
+                {{ pattern.pattern_code | upper }}
+            </span>
+            <div class="lf-reel__bottom">
+                <h2 class="lf-reel__title">{{ pattern.pattern_name }}</h2>
+                <div class="lf-reel__specs">
+                    <div class="lf-reel__spec">
+                        <span class="lf-reel__spec-label">Запросов/сек:</span>
+                        <span class="lf-reel__spec-value">{{ pattern.requests_per_second }}</span>
+                    </div>
+                    <div class="lf-reel__spec">
+                        <span class="lf-reel__spec-label">Пиковый множитель:</span>
+                        <span class="lf-reel__spec-value">x{{ pattern.peak_multiplier }}</span>
+                    </div>
+                    <div class="lf-reel__spec">
+                        <span class="lf-reel__spec-label">Длительность:</span>
+                        <span class="lf-reel__spec-value">{{ pattern.duration_hours }} ч.</span>
+                    </div>
+                    <div class="lf-reel__spec">
+                        <span class="lf-reel__spec-label">Применение:</span>
+                        <span class="lf-reel__spec-value">{{ pattern.use_case }}</span>
+                    </div>
+                </div>
+                <details class="lf-reel__desc">
+                    <summary class="lf-reel__desc-toggle">Описание — подробнее</summary>
+                    <p class="lf-reel__desc-text">{{ pattern.description }}</p>
+                </details>
+                <div class="lf-reel__actions">
+                    <span class="lf-reel__likes">Нравится: {{ pattern.likes_count }}</span>
+                    <a href="/pattern/{{ pattern.id }}?next=true" class="lf-reel__next-btn">Следующий</a>
+                </div>
+            </div>
+        </div>
+    </div>
+</main>
+
+<nav class="lf-tabs">
+    <a href="/pattern/{{ pattern.id }}" class="lf-tabs__item lf-tabs__item--active">
+        <span class="lf-tabs__label">Лента</span>
+    </a>
+    <a href="/forecast" class="lf-tabs__item">
+        <span class="lf-tabs__label">Заявка</span>
+    </a>
+    <a href="/patterns" class="lf-tabs__item">
+        <span class="lf-tabs__label">Плитка</span>
+    </a>
+</nav>
+
+</body>
+</html>
