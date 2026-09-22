@@ -12,7 +12,7 @@
     <header class="lf-header">
         <div class="lf-header__inner"></div>
     </header>
-    <a href="#" class="lf-account-btn">Создать аккаунт</a>
+    <a href="/forecast" class="lf-account-btn">Добавить</a>
 
     <section class="lf-filter">
         <form method="get" action="/patterns" class="lf-filter__form" id="filterForm">
@@ -24,7 +24,7 @@
                 type="range"
                 id="max_expected"
                 name="max_expected"
-                min="0"
+                min="1"
                 max="200"
                 value="{{ (max_expected // 1000000) if max_expected else 200 }}"
             >
@@ -36,7 +36,10 @@
             {% for pattern in patterns %}
             <article class="lf-card">
                 <a href="/pattern/{{ pattern.id }}" class="lf-card__img-link">
-                    <img class="lf-card__img" src="{{ pattern.image_url }}" alt="{{ pattern.pattern_name }}">
+                    <img class="lf-card__img" 
+                         src="{{ pattern.image_url if pattern.image_url else '/static/img/default-pattern.jpg' }}" 
+                         alt="{{ pattern.pattern_name }}"
+                         onerror="this.src='/static/img/default-pattern.jpg'">
                     <span class="lf-card__badge">{{ pattern.pattern_code | upper }}</span>
                 </a>
                 <div class="lf-card__body">
@@ -55,6 +58,10 @@
                     </div>
                     <div class="lf-card__footer">
                         <span class="lf-card__likes">❤️ {{ pattern.likes_count }}</span>
+                        <form method="post" action="/pattern/{{ pattern.id }}/delete" style="display: inline;">
+                            <button type="submit" class="lf-card__delete-btn" 
+                                    onclick="return confirm('Удалить паттерн?')">Удалить</button>
+                        </form>
                     </div>
                 </div>
             </article>
@@ -80,7 +87,6 @@
 </div>
 
 <script>
-// Плавная фильтрация без тиков
 const slider = document.getElementById('max_expected');
 const output = document.querySelector('.lf-filter__output');
 const form = document.getElementById('filterForm');

@@ -12,13 +12,17 @@
     <header class="lf-header lf-header--dark">
         <div class="lf-header__inner"></div>
     </header>
-    <a href="#" class="lf-account-btn">Создать аккаунт</a>
+    <a href="/forecast" class="lf-account-btn">Добавить</a>
 
     <main class="lf-reel">
         <div class="lf-reel__viewport">
-            <video class="lf-reel__video" autoplay loop muted playsinline>
-                <source src="{{ pattern.video_url }}" type="video/mp4">
+            <video class="lf-reel__video" autoplay loop muted playsinline 
+                   onerror="this.style.display='none'; this.nextElementSibling.style.display='block'">
+                <source src="{{ pattern.video_url if pattern.video_url else '/static/video/default-pattern.mp4' }}" type="video/mp4">
             </video>
+            <img class="lf-reel__video" style="display:none; object-fit:cover;" 
+                 src="{{ pattern.image_url if pattern.image_url else '/static/img/default-pattern.jpg' }}"
+                 onerror="this.src='/static/img/default-pattern.jpg'">
             <div class="lf-reel__overlay">
                 <span class="lf-reel__badge">{{ pattern.pattern_code | upper }}</span>
                 <div class="lf-reel__bottom">
@@ -29,10 +33,10 @@
                             
                             <details class="lf-reel__desc">
                                 <summary class="lf-reel__desc-summary">
-                                    {{ pattern.description[:70] }}... <span class="lf-reel__more">Еще</span>
+                                    {{ pattern.description[:70] if pattern.description else 'Нет описания' }}... <span class="lf-reel__more">Еще</span>
                                 </summary>
                                 <div class="lf-reel__desc-full">
-                                    {{ pattern.description }}
+                                    {{ pattern.description or 'Нет описания' }}
                                     <span class="lf-reel__collapse">Свернуть</span>
                                 </div>
                             </details>

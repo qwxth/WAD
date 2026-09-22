@@ -12,60 +12,71 @@
     <header class="lf-header">
         <div class="lf-header__inner"></div>
     </header>
-    <a href="#" class="lf-account-btn">Создать аккаунт</a>
+    <a href="/patterns" class="lf-account-btn">К плитке</a>
 
     <main class="lf-main">
         <div class="lf-form-page-simple">
-            <h1 class="lf-form-page__heading">Заявка на расчёт</h1>
+            <h1 class="lf-form-page__heading">
+                {% if draft %}Публикация паттерна{% else %}Создать паттерн{% endif %}
+            </h1>
             
             {% if draft %}
+            <!-- ЭТАП 2: Публикация черновика -->
             <div class="lf-form-media-select">
                 <div class="lf-form-media-item">
-                    <img class="lf-form-media-preview" src="{{ draft.image_url }}" alt="Изображение">
-                    <label class="lf-form-file-label">Изображение</label>
+                    <img class="lf-form-media-preview" 
+                         src="{{ draft.image_url if draft.image_url else '/static/img/default-pattern.jpg' }}" 
+                         alt="Изображение"
+                         onerror="this.src='/static/img/default-pattern.jpg'">
+                    <label class="lf-form-file-label">{{ draft.image_url.split('/')[-1] if draft.image_url else 'default-pattern.jpg' }}</label>
                 </div>
                 <div class="lf-form-media-item">
-                    <video class="lf-form-media-preview" autoplay loop muted playsinline>
-                        <source src="{{ draft.video_url }}" type="video/mp4">
+                    <video class="lf-form-media-preview" loop muted playsinline
+                           onerror="this.style.display='none'">
+                        <source src="{{ draft.video_url if draft.video_url else '/static/video/default-pattern.mp4' }}" type="video/mp4">
                     </video>
-                    <label class="lf-form-file-label">Видео</label>
+                    <label class="lf-form-file-label">{{ draft.video_url.split('/')[-1] if draft.video_url else 'default-pattern.mp4' }}</label>
                 </div>
             </div>
-            {% endif %}
 
-            <form class="lf-form" method="get" action="/forecast">
+            <form class="lf-form" method="post" action="/forecast/publish">
                 <div class="lf-form__group">
-                    <label class="lf-form__label" for="pattern_name">Название</label>
-                    <input class="lf-form__input" type="text" id="pattern_name" name="pattern_name"
-                        value="{{ draft.pattern_name if draft else '' }}" placeholder="DDoS-атака">
+                    <label class="lf-form__label">Название</label>
+                    <input class="lf-form__input" type="text" value="{{ draft.pattern_name }}" readonly>
                 </div>
 
                 <div class="lf-form__group">
                     <label class="lf-form__label" for="requests_per_second">Базовый RPS</label>
-                    <input class="lf-form__input" type="number" id="requests_per_second" name="requests_per_second"
-                        value="{{ draft.requests_per_second if draft else '' }}" placeholder="50000">
+                    <input class="lf-form__input" type="number" id="requests_per_second" 
+                           name="requests_per_second" required placeholder="500">
                 </div>
 
                 <div class="lf-form__group">
-                    <label class="lf-form__label" for="peak_multiplier">Множитель</label>
-                    <input class="lf-form__input" type="number" id="peak_multiplier" name="peak_multiplier"
-                        value="{{ draft.peak_multiplier if draft else '' }}" placeholder="100" step="0.1">
+                    <label class="lf-form__label" for="peak_multiplier">Пиковый множитель</label>
+                    <input class="lf-form__input" type="number" id="peak_multiplier" 
+                           name="peak_multiplier" step="0.1" required placeholder="2.0">
                 </div>
 
                 <div class="lf-form__group">
                     <label class="lf-form__label" for="duration_hours">Длительность (ч)</label>
-                    <input class="lf-form__input" type="number" id="duration_hours" name="duration_hours"
-                        value="{{ draft.duration_hours if draft else '' }}" placeholder="1">
+                    <input class="lf-form__input" type="number" id="duration_hours" 
+                           name="duration_hours" required placeholder="24">
                 </div>
 
-                <button class="lf-form__submit" type="submit">Рассчитать</button>
+                <div class="lf-form__group">
+                    <label class="lf-form__label" for="description">Описание</label>
+                    <textarea class="lf-form__input" id="description" name="description" 
+                              rows="3" placeholder="Краткое описание паттерна нагрузки"></textarea>
+                </div>
+
+                <button class="lf-form__submit" type="submit">Опубликовать</button>
             </form>
 
             {% if forecast %}
             <div class="lf-forecast-result">
-                <h3 class="lf-forecast-result__title">Результат</h3>
+                <h3 class="lf-forecast-result__title">Прогноз ресурсов</h3>
                 <p class="lf-forecast-result__subtitle">
-                    RPS: <strong>{{ forecast.effective_rps | int }}</strong>
+                    Эффективный RPS: <strong>{{ forecast.effective_rps | int }}</strong>
                 </p>
                 <div class="lf-forecast-result__cards">
                     <div class="lf-resource-card">
@@ -80,6 +91,40 @@
                     </div>
                 </div>
             </div>
+            {% endif %}
+
+            {% else %}
+            <!-- ЭТАП 1: Создание черновика с URL медиа -->
+            <form class="lf-form" method="post" action="/forecast/create">
+                <div class="lf-form__group">
+                    <label class="lf-form__label" for="pattern_name">Название паттерна</label>
+                    <input class="lf-form__input" type="text" id="pattern_name" 
+                           name="pattern_name" required placeholder="Новый паттерн нагрузки">
+                </div>
+
+                <div class="lf-form__group">
+                    <label class="lf-form__label" for="image_url">URL изображения (MinIO)</label>
+                    <input class="lf-form__input" type="text" id="image_url" 
+                           name="image_url" 
+                           placeholder="http://localhost:9000/load-patterns/my-image.jpg">
+                    <small style="color: #8E8E93; font-size: 11px; display: block; margin-top: 4px;">
+                        Загрузите файл в MinIO Console: http://localhost:9001<br>
+                        Оставьте пустым для дефолтного изображения
+                    </small>
+                </div>
+
+                <div class="lf-form__group">
+                    <label class="lf-form__label" for="video_url">URL видео (MinIO)</label>
+                    <input class="lf-form__input" type="text" id="video_url" 
+                           name="video_url" 
+                           placeholder="http://localhost:9000/load-patterns/my-video.mp4">
+                    <small style="color: #8E8E93; font-size: 11px; display: block; margin-top: 4px;">
+                        Оставьте пустым для дефолтного видео
+                    </small>
+                </div>
+
+                <button class="lf-form__submit" type="submit">Далее</button>
+            </form>
             {% endif %}
         </div>
     </main>

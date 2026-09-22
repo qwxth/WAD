@@ -3,7 +3,7 @@ from fastapi.staticfiles import StaticFiles
 from api.handlers import router
 import uvicorn
 
-app = FastAPI(title="Server Load Forecast")
+app = FastAPI(title="LoadForecast - Server Load Patterns")
 
 app.mount("/static", StaticFiles(directory="static"), name="static")
 app.include_router(router)
