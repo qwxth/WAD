@@ -29,32 +29,34 @@
             </span>
             <div class="lf-reel__bottom">
                 <h2 class="lf-reel__title">{{ pattern.pattern_name }}</h2>
-                <div class="lf-reel__specs">
-                    <div class="lf-reel__spec">
-                        <span class="lf-reel__spec-label">Запросов/сек:</span>
-                        <span class="lf-reel__spec-value">{{ pattern.requests_per_second }}</span>
+                
+                <div class="lf-reel__content">
+                    <div class="lf-reel__left">
+                        <details class="lf-reel__desc">
+                            <summary class="lf-reel__desc-toggle">{{ pattern.description[:80] }}... Еще</summary>
+                            <p class="lf-reel__desc-text">{{ pattern.description }}</p>
+                        </details>
                     </div>
-                    <div class="lf-reel__spec">
-                        <span class="lf-reel__spec-label">Пиковый множитель:</span>
-                        <span class="lf-reel__spec-value">x{{ pattern.peak_multiplier }}</span>
-                    </div>
-                    <div class="lf-reel__spec">
-                        <span class="lf-reel__spec-label">Длительность:</span>
-                        <span class="lf-reel__spec-value">{{ pattern.duration_hours }} ч.</span>
-                    </div>
-                    <div class="lf-reel__spec">
-                        <span class="lf-reel__spec-label">Применение:</span>
-                        <span class="lf-reel__spec-value">{{ pattern.use_case }}</span>
+                    
+                    <div class="lf-reel__right">
+                        <div class="lf-reel__specs">
+                            <div class="lf-reel__spec">
+                                <span class="lf-reel__spec-value">{{ (pattern.expected_request_count / 1000000) | int }}М</span>
+                                <span class="lf-reel__spec-label">Матожид.</span>
+                            </div>
+                            <div class="lf-reel__spec">
+                                <span class="lf-reel__spec-value">{{ pattern.average_request_count }}</span>
+                                <span class="lf-reel__spec-label">Среднее</span>
+                            </div>
+                        </div>
+                        
+                        <div class="lf-reel__actions-right">
+                            <span class="lf-reel__likes">{{ pattern.likes_count }}</span>
+                            <a href="/pattern/{{ pattern.id }}?next=true" class="lf-reel__next-btn">Далее</a>
+                        </div>
                     </div>
                 </div>
-                <details class="lf-reel__desc">
-                    <summary class="lf-reel__desc-toggle">Описание — подробнее</summary>
-                    <p class="lf-reel__desc-text">{{ pattern.description }}</p>
-                </details>
-                <div class="lf-reel__actions">
-                    <span class="lf-reel__likes">Нравится: {{ pattern.likes_count }}</span>
-                    <a href="/pattern/{{ pattern.id }}?next=true" class="lf-reel__next-btn">Следующий</a>
-                </div>
+                
             </div>
         </div>
     </div>

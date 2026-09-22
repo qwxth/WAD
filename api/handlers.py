@@ -2,18 +2,18 @@ import math
 from fastapi import APIRouter, Request, Query
 from fastapi.responses import RedirectResponse
 from fastapi.templating import Jinja2Templates
-from data.collections import load_patterns_db
+from data.collections import server_load_patterns_db
 
 router = APIRouter()
 templates = Jinja2Templates(directory="templates")
 
 
 def _visible_patterns():
-    return [p for p in load_patterns_db if p["status"] == "published"]
+    return [p for p in server_load_patterns_db if p["status"] == "published"]
 
 
 def _draft_pattern():
-    for p in load_patterns_db:
+    for p in server_load_patterns_db:
         if p["status"] == "draft":
             return p
     return None
@@ -27,17 +27,18 @@ def root():
 @router.get("/patterns")
 def get_patterns_grid(
     request: Request,
-    max_rps: int = Query(default=None, description="Фильтр по максимальному RPS"),
+    max_expected: int = Query(default=None, description="Фильтр по матожиданию"),
 ):
     patterns = _visible_patterns()
-    if max_rps is not None:
-        patterns = [p for p in patterns if p["requests_per_second"] <= max_rps]
+    if max_expected is not None:
+        max_expected_full = max_expected * 1000000
+        patterns = [p for p in patterns if p["expected_request_count"] <= max_expected_full]
     for p in patterns:
         p["likes_count"] = len(p["likes"])
     return templates.TemplateResponse(
         request=request,
         name="patterns.html",
-        context={"patterns": patterns, "max_rps": max_rps},
+        context={"patterns": patterns, "max_expected": max_expected * 1000000 if max_expected else None},
     )
 
 

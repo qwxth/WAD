@@ -32,16 +32,18 @@
 <section class="lf-filter">
     <div class="lf-filter__inner">
         <form method="get" action="/patterns" class="lf-filter__form">
-            <label class="lf-filter__label" for="max_rps">Фильтр по максимальному RPS:</label>
+            <label class="lf-filter__label" for="max_expected">Макс. матожидание обращений (млн):</label>
             <input
-                class="lf-filter__input"
-                type="number"
-                id="max_rps"
-                name="max_rps"
-                placeholder="Например: 2000"
-                value="{{ max_rps if max_rps is not none else '' }}"
-                min="1"
+                class="lf-filter__slider"
+                type="range"
+                id="max_expected"
+                name="max_expected"
+                min="0"
+                max="200"
+                value="{{ (max_expected // 1000000) if max_expected else 200 }}"
+                oninput="this.nextElementSibling.value = this.value"
             >
+            <output class="lf-filter__output">{{ (max_expected // 1000000) if max_expected else 200 }}</output>
             <button class="lf-filter__btn" type="submit">Применить</button>
             <a class="lf-filter__reset" href="/patterns">Сбросить</a>
         </form>
@@ -64,12 +66,12 @@
                 </a>
                 <div class="lf-card__meta">
                     <div class="lf-card__meta-item">
-                        <span class="lf-card__meta-label">Запросов/сек:</span>
-                        <strong>{{ pattern.requests_per_second }}</strong>
+                        <span class="lf-card__meta-label">Матожидание обращений:</span>
+                        <strong>{{ (pattern.expected_request_count / 1000000) | int }} млн</strong>
                     </div>
                     <div class="lf-card__meta-item">
-                        <span class="lf-card__meta-label">Длительность:</span>
-                        <strong>{{ pattern.duration_hours }} ч.</strong>
+                        <span class="lf-card__meta-label">Среднее обращений/сек:</span>
+                        <strong>{{ pattern.average_request_count }}</strong>
                     </div>
                     <div class="lf-card__meta-item">
                         <span class="lf-card__meta-label">Применение:</span>
@@ -84,7 +86,7 @@
         </article>
         {% else %}
         <p class="lf-grid__empty">
-            Паттерны с RPS не более {{ max_rps }} не найдены.
+            Паттерны не найдены.
             <a href="/patterns">Сбросить фильтр</a>
         </p>
         {% endfor %}
