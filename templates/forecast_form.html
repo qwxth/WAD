@@ -2,115 +2,102 @@
 <html lang="ru">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>LoadForecast — Заявка на расчёт ресурсов</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <title>LoadForecast — Заявка</title>
     <link rel="stylesheet" href="/static/css/style.css">
 </head>
-<body>
+<body class="mobile-app">
 
-<header class="lf-header">
-    <div class="lf-header__inner">
-        <a href="/patterns" class="lf-header__logo">LoadForecast</a>
-        <nav class="lf-header__nav">
-            <a href="/patterns" class="lf-header__nav-link">Паттерны</a>
-            <a href="/forecast" class="lf-header__nav-link lf-header__nav-link--active">Заявка</a>
-        </nav>
-    </div>
-</header>
-
-<main class="lf-main lf-main--form">
-    <div class="lf-form-page-simple">
-
-        <h1 class="lf-form-page__heading">Заявка на расчёт серверных ресурсов</h1>
-        
-        {% if draft %}
-        <div class="lf-form-media-select">
-            <div class="lf-form-media-item">
-                <img class="lf-form-media-preview" src="{{ draft.image_url }}" alt="Изображение">
-                <input type="file" class="lf-form-file-input" accept="image/*">
-                <label class="lf-form-file-label">Выбрать изображение</label>
-            </div>
-            <div class="lf-form-media-item">
-                <video class="lf-form-media-preview" autoplay loop muted playsinline>
-                    <source src="{{ draft.video_url }}" type="video/mp4">
-                </video>
-                <input type="file" class="lf-form-file-input" accept="video/*">
-                <label class="lf-form-file-label">Выбрать видео</label>
-            </div>
+<div class="phone-frame">
+    <header class="lf-header">
+        <div class="lf-header__inner">
+            <a href="/patterns" class="lf-header__logo">LoadForecast</a>
         </div>
-        {% endif %}
+    </header>
+    <a href="#" class="lf-account-btn">Создать аккаунт</a>
 
-        <form class="lf-form" method="get" action="/forecast">
-
-            <div class="lf-form__group">
-                <label class="lf-form__label" for="pattern_name">Название паттерна</label>
-                <input class="lf-form__input" type="text" id="pattern_name" name="pattern_name"
-                    value="{{ draft.pattern_name if draft else '' }}" placeholder="DDoS-атака">
-            </div>
-
-            <div class="lf-form__group">
-                <label class="lf-form__label" for="requests_per_second">Базовый RPS (запросов/сек)</label>
-                <input class="lf-form__input" type="number" id="requests_per_second" name="requests_per_second"
-                    value="{{ draft.requests_per_second if draft else '' }}" placeholder="50000" min="1">
-            </div>
-
-            <div class="lf-form__group">
-                <label class="lf-form__label" for="peak_multiplier">Пиковый множитель</label>
-                <input class="lf-form__input" type="number" id="peak_multiplier" name="peak_multiplier"
-                    value="{{ draft.peak_multiplier if draft else '' }}" placeholder="100" min="0.1" step="0.1">
-            </div>
-
-            <div class="lf-form__group">
-                <label class="lf-form__label" for="duration_hours">Длительность (часов)</label>
-                <input class="lf-form__input" type="number" id="duration_hours" name="duration_hours"
-                    value="{{ draft.duration_hours if draft else '' }}" placeholder="1" min="1">
-            </div>
-
-            <button class="lf-form__submit" type="submit">Рассчитать ресурсы</button>
-
-        </form>
-
-        {% if forecast %}
-        <div class="lf-forecast-result">
-            <h3 class="lf-forecast-result__title">Результат расчёта</h3>
-            <p class="lf-forecast-result__subtitle">
-                При эффективном RPS = <strong>{{ forecast.effective_rps | int }}</strong> запросов/сек:
-            </p>
-            <div class="lf-forecast-result__cards">
-                <div class="lf-resource-card">
-                    <div class="lf-resource-card__label">CPU</div>
-                    <div class="lf-resource-card__value">{{ forecast.required_cpu }} ядер</div>
-                    <div class="lf-resource-card__formula">RPS x K / 200</div>
+    <main class="lf-main">
+        <div class="lf-form-page-simple">
+            <h1 class="lf-form-page__heading">Заявка на расчёт</h1>
+            
+            {% if draft %}
+            <div class="lf-form-media-select">
+                <div class="lf-form-media-item">
+                    <img class="lf-form-media-preview" src="{{ draft.image_url }}" alt="Изображение">
+                    <label class="lf-form-file-label">Изображение</label>
                 </div>
-                <div class="lf-resource-card">
-                    <div class="lf-resource-card__label">RAM</div>
-                    <div class="lf-resource-card__value">{{ forecast.required_ram }} ГБ</div>
-                    <div class="lf-resource-card__formula">RPS x K / 500</div>
+                <div class="lf-form-media-item">
+                    <video class="lf-form-media-preview" autoplay loop muted playsinline>
+                        <source src="{{ draft.video_url }}" type="video/mp4">
+                    </video>
+                    <label class="lf-form-file-label">Видео</label>
                 </div>
             </div>
+            {% endif %}
+
+            <form class="lf-form" method="get" action="/forecast">
+                <div class="lf-form__group">
+                    <label class="lf-form__label" for="pattern_name">Название</label>
+                    <input class="lf-form__input" type="text" id="pattern_name" name="pattern_name"
+                        value="{{ draft.pattern_name if draft else '' }}" placeholder="DDoS-атака">
+                </div>
+
+                <div class="lf-form__group">
+                    <label class="lf-form__label" for="requests_per_second">Базовый RPS</label>
+                    <input class="lf-form__input" type="number" id="requests_per_second" name="requests_per_second"
+                        value="{{ draft.requests_per_second if draft else '' }}" placeholder="50000">
+                </div>
+
+                <div class="lf-form__group">
+                    <label class="lf-form__label" for="peak_multiplier">Множитель</label>
+                    <input class="lf-form__input" type="number" id="peak_multiplier" name="peak_multiplier"
+                        value="{{ draft.peak_multiplier if draft else '' }}" placeholder="100" step="0.1">
+                </div>
+
+                <div class="lf-form__group">
+                    <label class="lf-form__label" for="duration_hours">Длительность (ч)</label>
+                    <input class="lf-form__input" type="number" id="duration_hours" name="duration_hours"
+                        value="{{ draft.duration_hours if draft else '' }}" placeholder="1">
+                </div>
+
+                <button class="lf-form__submit" type="submit">Рассчитать</button>
+            </form>
+
+            {% if forecast %}
+            <div class="lf-forecast-result">
+                <h3 class="lf-forecast-result__title">Результат</h3>
+                <p class="lf-forecast-result__subtitle">
+                    RPS: <strong>{{ forecast.effective_rps | int }}</strong>
+                </p>
+                <div class="lf-forecast-result__cards">
+                    <div class="lf-resource-card">
+                        <div class="lf-resource-card__label">CPU</div>
+                        <div class="lf-resource-card__value">{{ forecast.required_cpu }}</div>
+                        <div class="lf-resource-card__formula">ядер</div>
+                    </div>
+                    <div class="lf-resource-card">
+                        <div class="lf-resource-card__label">RAM</div>
+                        <div class="lf-resource-card__value">{{ forecast.required_ram }}</div>
+                        <div class="lf-resource-card__formula">ГБ</div>
+                    </div>
+                </div>
+            </div>
+            {% endif %}
         </div>
-        {% endif %}
+    </main>
 
-    </div>
-</main>
-
-<nav class="lf-tabs">
-    <a href="/pattern/1" class="lf-tabs__item">
-        <span class="lf-tabs__label">Лента</span>
-    </a>
-    <a href="/forecast" class="lf-tabs__item lf-tabs__item--active">
-        <span class="lf-tabs__label">Заявка</span>
-    </a>
-    <a href="/patterns" class="lf-tabs__item">
-        <span class="lf-tabs__label">Плитка</span>
-    </a>
-</nav>
-
-<footer class="lf-footer">
-    <div class="lf-footer__inner">
-        <p>© 2024 LoadForecast. Лабораторная работа №1.</p>
-    </div>
-</footer>
+    <nav class="lf-tabs">
+        <a href="/pattern/1" class="lf-tabs__item">
+            <span class="lf-tabs__label">Лента</span>
+        </a>
+        <a href="/forecast" class="lf-tabs__item lf-tabs__item--active">
+            <span class="lf-tabs__label">Заявка</span>
+        </a>
+        <a href="/patterns" class="lf-tabs__item">
+            <span class="lf-tabs__label">Плитка</span>
+        </a>
+    </nav>
+</div>
 
 </body>
 </html>

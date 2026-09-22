@@ -2,37 +2,25 @@
 <html lang="ru">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
     <title>LoadForecast — Паттерны нагрузки</title>
     <link rel="stylesheet" href="/static/css/style.css">
 </head>
-<body>
+<body class="mobile-app">
 
-<header class="lf-header">
-    <div class="lf-header__inner">
-        <a href="/patterns" class="lf-header__logo">LoadForecast</a>
-        <nav class="lf-header__nav">
-            <a href="/patterns" class="lf-header__nav-link lf-header__nav-link--active">Паттерны</a>
-            <a href="/forecast" class="lf-header__nav-link">Заявка</a>
-        </nav>
-        <div class="lf-header__account">
-            <span class="lf-header__account-label">Привет, инженер</span>
-            <a href="#" class="lf-header__account-link">Аккаунт</a>
+<div class="phone-frame">
+    <header class="lf-header">
+        <div class="lf-header__inner">
+            <a href="/patterns" class="lf-header__logo">LoadForecast</a>
         </div>
-    </div>
-</header>
+    </header>
+    <a href="#" class="lf-account-btn">Создать аккаунт</a>
 
-<section class="lf-hero">
-    <div class="lf-hero__inner">
-        <h1 class="lf-hero__title">Прогноз нагрузки на сервер</h1>
-        <p class="lf-hero__subtitle">Выберите паттерн нагрузки и рассчитайте требуемые ресурсы CPU и RAM</p>
-    </div>
-</section>
-
-<section class="lf-filter">
-    <div class="lf-filter__inner">
-        <form method="get" action="/patterns" class="lf-filter__form">
-            <label class="lf-filter__label" for="max_expected">Макс. матожидание обращений (млн):</label>
+    <section class="lf-filter">
+        <form method="get" action="/patterns" class="lf-filter__form" id="filterForm">
+            <label class="lf-filter__label" for="max_expected">
+                Матожидание до <output class="lf-filter__output">{{ (max_expected // 1000000) if max_expected else 200 }}</output> млн
+            </label>
             <input
                 class="lf-filter__slider"
                 type="range"
@@ -41,79 +29,73 @@
                 min="0"
                 max="200"
                 value="{{ (max_expected // 1000000) if max_expected else 200 }}"
-                oninput="this.nextElementSibling.value = this.value"
             >
-            <output class="lf-filter__output">{{ (max_expected // 1000000) if max_expected else 200 }}</output>
-            <button class="lf-filter__btn" type="submit">Применить</button>
-            <a class="lf-filter__reset" href="/patterns">Сбросить</a>
         </form>
-    </div>
-</section>
+    </section>
 
-<main class="lf-main">
-    <div class="lf-grid">
-        {% for pattern in patterns %}
-        <article class="lf-card">
-            <a href="/pattern/{{ pattern.id }}" class="lf-card__img-link">
-                <img class="lf-card__img" src="{{ pattern.image_url }}" alt="{{ pattern.pattern_name }}">
-                <span class="lf-card__badge lf-card__badge--{{ pattern.pattern_code }}">
-                    {{ pattern.pattern_code | upper }}
-                </span>
-            </a>
-            <div class="lf-card__body">
-                <a href="/pattern/{{ pattern.id }}" class="lf-card__title">
-                    {{ pattern.pattern_name }}
+    <main class="lf-main">
+        <div class="lf-grid">
+            {% for pattern in patterns %}
+            <article class="lf-card">
+                <a href="/pattern/{{ pattern.id }}" class="lf-card__img-link">
+                    <img class="lf-card__img" src="{{ pattern.image_url }}" alt="{{ pattern.pattern_name }}">
+                    <span class="lf-card__badge">{{ pattern.pattern_code | upper }}</span>
                 </a>
-                <div class="lf-card__meta">
-                    <div class="lf-card__meta-item">
-                        <span class="lf-card__meta-label">Матожидание обращений:</span>
-                        <strong>{{ (pattern.expected_request_count / 1000000) | int }} млн</strong>
+                <div class="lf-card__body">
+                    <a href="/pattern/{{ pattern.id }}" class="lf-card__title">
+                        {{ pattern.pattern_name }}
+                    </a>
+                    <div class="lf-card__meta">
+                        <div class="lf-card__meta-item">
+                            <span class="lf-card__meta-label">Матожид.:</span>
+                            <strong>{{ (pattern.expected_request_count / 1000000) | int }} млн</strong>
+                        </div>
+                        <div class="lf-card__meta-item">
+                            <span class="lf-card__meta-label">Среднее:</span>
+                            <strong>{{ pattern.average_request_count }}</strong>
+                        </div>
                     </div>
-                    <div class="lf-card__meta-item">
-                        <span class="lf-card__meta-label">Среднее обращений/сек:</span>
-                        <strong>{{ pattern.average_request_count }}</strong>
-                    </div>
-                    <div class="lf-card__meta-item">
-                        <span class="lf-card__meta-label">Применение:</span>
-                        <strong>{{ pattern.use_case }}</strong>
+                    <div class="lf-card__footer">
+                        <span class="lf-card__likes">❤️ {{ pattern.likes_count }}</span>
                     </div>
                 </div>
-                <div class="lf-card__footer">
-                    <span class="lf-card__likes">Нравится: {{ pattern.likes_count }}</span>
-                    <a href="/pattern/{{ pattern.id }}" class="lf-card__btn">Подробнее</a>
-                </div>
-            </div>
-        </article>
-        {% else %}
-        <p class="lf-grid__empty">
-            Паттерны не найдены.
-            <a href="/patterns">Сбросить фильтр</a>
-        </p>
-        {% endfor %}
-    </div>
-</main>
+            </article>
+            {% else %}
+            <p class="lf-grid__empty">
+                Паттерны не найдены.
+            </p>
+            {% endfor %}
+        </div>
+    </main>
 
-<footer class="lf-footer">
-    <div class="lf-footer__inner">
-        <p>© 2024 LoadForecast. Лабораторная работа №1.</p>
-        <nav class="lf-footer__nav">
-            <a href="/patterns">Паттерны</a>
-            <a href="/forecast">Заявка</a>
-        </nav>
-    </div>
-</footer>
+    <nav class="lf-tabs">
+        <a href="/pattern/1" class="lf-tabs__item">
+            <span class="lf-tabs__label">Лента</span>
+        </a>
+        <a href="/forecast" class="lf-tabs__item">
+            <span class="lf-tabs__label">Заявка</span>
+        </a>
+        <a href="/patterns" class="lf-tabs__item lf-tabs__item--active">
+            <span class="lf-tabs__label">Плитка</span>
+        </a>
+    </nav>
+</div>
 
-<nav class="lf-tabs">
-    <a href="/pattern/1" class="lf-tabs__item">
-        <span class="lf-tabs__label">Лента</span>
-    </a>
-    <a href="/forecast" class="lf-tabs__item">
-        <span class="lf-tabs__label">Заявка</span>
-    </a>
-    <a href="/patterns" class="lf-tabs__item lf-tabs__item--active">
-        <span class="lf-tabs__label">Плитка</span>
-    </a>
-</nav>
+<script>
+// Плавная фильтрация без тиков
+const slider = document.getElementById('max_expected');
+const output = document.querySelector('.lf-filter__output');
+const form = document.getElementById('filterForm');
+let timeout;
+
+slider.addEventListener('input', function() {
+    output.value = this.value;
+    clearTimeout(timeout);
+    timeout = setTimeout(() => {
+        form.submit();
+    }, 500);
+});
+</script>
 
 </body>
 </html>

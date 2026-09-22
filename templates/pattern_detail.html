@@ -2,77 +2,88 @@
 <html lang="ru">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
     <title>LoadForecast — {{ pattern.pattern_name }}</title>
     <link rel="stylesheet" href="/static/css/style.css">
 </head>
-<body class="lf-body--detail">
+<body class="mobile-app">
 
-<header class="lf-header lf-header--dark">
-    <div class="lf-header__inner">
-        <a href="/patterns" class="lf-header__logo">LoadForecast</a>
-        <nav class="lf-header__nav">
-            <a href="/patterns" class="lf-header__nav-link">Паттерны</a>
-            <a href="/forecast" class="lf-header__nav-link">Заявка</a>
-        </nav>
-    </div>
-</header>
+<div class="phone-frame phone-frame--fullscreen">
+    <header class="lf-header lf-header--dark">
+        <div class="lf-header__inner">
+            <a href="/patterns" class="lf-header__logo">LoadForecast</a>
+        </div>
+    </header>
+    <a href="#" class="lf-account-btn">Создать аккаунт</a>
 
-<main class="lf-reel">
-    <div class="lf-reel__viewport">
-        <video class="lf-reel__video" autoplay loop muted playsinline>
-            <source src="{{ pattern.video_url }}" type="video/mp4">
-        </video>
-        <div class="lf-reel__overlay">
-            <span class="lf-reel__badge lf-card__badge--{{ pattern.pattern_code }}">
-                {{ pattern.pattern_code | upper }}
-            </span>
-            <div class="lf-reel__bottom">
-                <h2 class="lf-reel__title">{{ pattern.pattern_name }}</h2>
-                
-                <div class="lf-reel__content">
-                    <div class="lf-reel__left">
-                        <details class="lf-reel__desc">
-                            <summary class="lf-reel__desc-toggle">{{ pattern.description[:80] }}... Еще</summary>
-                            <p class="lf-reel__desc-text">{{ pattern.description }}</p>
-                        </details>
-                    </div>
+    <main class="lf-reel">
+        <div class="lf-reel__viewport">
+            <video class="lf-reel__video" autoplay loop muted playsinline>
+                <source src="{{ pattern.video_url }}" type="video/mp4">
+            </video>
+            <div class="lf-reel__overlay">
+                <span class="lf-reel__badge">{{ pattern.pattern_code | upper }}</span>
+                <div class="lf-reel__bottom">
                     
-                    <div class="lf-reel__right">
-                        <div class="lf-reel__specs">
-                            <div class="lf-reel__spec">
-                                <span class="lf-reel__spec-value">{{ (pattern.expected_request_count / 1000000) | int }}М</span>
-                                <span class="lf-reel__spec-label">Матожид.</span>
-                            </div>
-                            <div class="lf-reel__spec">
-                                <span class="lf-reel__spec-value">{{ pattern.average_request_count }}</span>
-                                <span class="lf-reel__spec-label">Среднее</span>
-                            </div>
+                    <div class="lf-reel__content">
+                        <div class="lf-reel__left">
+                            <h2 class="lf-reel__title">{{ pattern.pattern_name }}</h2>
+                            
+                            <details class="lf-reel__desc">
+                                <summary class="lf-reel__desc-summary">
+                                    {{ pattern.description[:70] }}... <span class="lf-reel__more">Еще</span>
+                                </summary>
+                                <div class="lf-reel__desc-full">
+                                    {{ pattern.description }}
+                                    <span class="lf-reel__collapse">Свернуть</span>
+                                </div>
+                            </details>
                         </div>
                         
-                        <div class="lf-reel__actions-right">
-                            <span class="lf-reel__likes">{{ pattern.likes_count }}</span>
-                            <a href="/pattern/{{ pattern.id }}?next=true" class="lf-reel__next-btn">Далее</a>
+                        <div class="lf-reel__right">
+                            <div class="lf-reel__specs">
+                                <div class="lf-reel__spec">
+                                    <span class="lf-reel__spec-value">{{ (pattern.expected_request_count / 1000000) | int }}М</span>
+                                    <span class="lf-reel__spec-label">Матожид.</span>
+                                </div>
+                                <div class="lf-reel__spec">
+                                    <span class="lf-reel__spec-value">{{ pattern.average_request_count }}</span>
+                                    <span class="lf-reel__spec-label">Среднее</span>
+                                </div>
+                            </div>
+                            
+                            <div class="lf-reel__actions-right">
+                                <span class="lf-reel__likes">❤️ {{ pattern.likes_count }}</span>
+                                <a href="/pattern/{{ pattern.id }}?next=true" class="lf-reel__next-btn">Далее</a>
+                            </div>
                         </div>
                     </div>
+                    
                 </div>
-                
             </div>
         </div>
-    </div>
-</main>
+    </main>
 
-<nav class="lf-tabs">
-    <a href="/pattern/{{ pattern.id }}" class="lf-tabs__item lf-tabs__item--active">
-        <span class="lf-tabs__label">Лента</span>
-    </a>
-    <a href="/forecast" class="lf-tabs__item">
-        <span class="lf-tabs__label">Заявка</span>
-    </a>
-    <a href="/patterns" class="lf-tabs__item">
-        <span class="lf-tabs__label">Плитка</span>
-    </a>
-</nav>
+    <nav class="lf-tabs">
+        <a href="/pattern/{{ pattern.id }}" class="lf-tabs__item lf-tabs__item--active">
+            <span class="lf-tabs__label">Лента</span>
+        </a>
+        <a href="/forecast" class="lf-tabs__item">
+            <span class="lf-tabs__label">Заявка</span>
+        </a>
+        <a href="/patterns" class="lf-tabs__item">
+            <span class="lf-tabs__label">Плитка</span>
+        </a>
+    </nav>
+</div>
+
+<script>
+document.querySelector('.lf-reel__collapse')?.addEventListener('click', function(e) {
+    e.preventDefault();
+    const details = this.closest('details');
+    details.removeAttribute('open');
+});
+</script>
 
 </body>
 </html>
