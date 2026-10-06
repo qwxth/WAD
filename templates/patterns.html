@@ -40,7 +40,6 @@
                          src="{{ pattern.image_url if pattern.image_url else '/static/img/default-pattern.jpg' }}" 
                          alt="{{ pattern.pattern_name }}"
                          onerror="this.src='/static/img/default-pattern.jpg'">
-                    <span class="lf-card__badge">{{ pattern.pattern_code | upper }}</span>
                 </a>
                 <div class="lf-card__body">
                     <a href="/pattern/{{ pattern.id }}" class="lf-card__title">

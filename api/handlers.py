@@ -1,5 +1,5 @@
 import math
-from fastapi import APIRouter, Request, Query, Form, Depends
+from fastapi import APIRouter, Request, Query, Form, Depends, HTTPException
 from fastapi.responses import RedirectResponse
 from fastapi.templating import Jinja2Templates
 from sqlalchemy.orm import Session
@@ -11,8 +11,13 @@ from typing import Optional
 router = APIRouter()
 templates = Jinja2Templates(directory="templates")
 
-# Константы для пользователя (в реальном приложении из сессии)
-CURRENT_USER_ID = 1
+
+def get_current_user_id(db: Session) -> int:
+    """Получить ID первого пользователя из БД"""
+    user = db.query(User).first()
+    if not user:
+        raise Exception("В БД нет пользователей! Выполните: python3 init_data.py")
+    return user.id
 
 
 @router.get("/")
@@ -26,7 +31,6 @@ def get_patterns_grid(
     max_expected: int = Query(default=None, description="Фильтр по матожиданию"),
     db: Session = Depends(get_db)
 ):
-    # ORM запрос: получение опубликованных паттернов
     query = db.query(LoadPattern).filter(LoadPattern.status == PatternStatus.published)
     
     if max_expected is not None:
@@ -35,7 +39,6 @@ def get_patterns_grid(
     
     patterns = query.all()
     
-    # Подсчет лайков через ORM
     for pattern in patterns:
         pattern.likes_count = db.query(PatternLike).filter(
             PatternLike.pattern_id == pattern.id
@@ -58,10 +61,12 @@ def get_pattern_detail(
     next: bool = Query(default=False),
     db: Session = Depends(get_db)
 ):
-    # ORM запрос: получение видимых паттернов
     visible = db.query(LoadPattern).filter(
         LoadPattern.status == PatternStatus.published
     ).all()
+    
+    if not visible:
+        raise HTTPException(status_code=404, detail="Нет опубликованных паттернов")
     
     if next:
         current_index = None
@@ -72,17 +77,19 @@ def get_pattern_detail(
         if current_index is not None and current_index + 1 < len(visible):
             pattern = visible[current_index + 1]
         else:
-            pattern = visible[0] if visible else None
+            pattern = visible[0]
     else:
         pattern = db.query(LoadPattern).filter(
             LoadPattern.id == pattern_id,
             LoadPattern.status == PatternStatus.published
         ).first()
+        
+        if not pattern:
+            raise HTTPException(status_code=404, detail="Паттерн не найден или удалён")
     
-    if pattern:
-        pattern.likes_count = db.query(PatternLike).filter(
-            PatternLike.pattern_id == pattern.id
-        ).count()
+    pattern.likes_count = db.query(PatternLike).filter(
+        PatternLike.pattern_id == pattern.id
+    ).count()
     
     return templates.TemplateResponse(
         request=request,
@@ -96,9 +103,10 @@ def get_forecast_form(
     request: Request,
     db: Session = Depends(get_db)
 ):
-    # ORM запрос: получение черновика текущего пользователя
+    current_user_id = get_current_user_id(db)
+    
     draft = db.query(LoadPattern).filter(
-        LoadPattern.creator_id == CURRENT_USER_ID,
+        LoadPattern.creator_id == current_user_id,
         LoadPattern.status == PatternStatus.draft
     ).first()
     
@@ -130,19 +138,19 @@ def create_draft(
     video_url: Optional[str] = Form(None),
     db: Session = Depends(get_db)
 ):
-    # ORM: Проверка наличия черновика
+    current_user_id = get_current_user_id(db)
+    
     existing_draft = db.query(LoadPattern).filter(
-        LoadPattern.creator_id == CURRENT_USER_ID,
+        LoadPattern.creator_id == current_user_id,
         LoadPattern.status == PatternStatus.draft
     ).first()
     
     if not existing_draft:
-        # ORM: Создание нового черновика
         new_draft = LoadPattern(
             pattern_name=pattern_name,
             pattern_code=pattern_name.lower().replace(" ", "_").replace("-", "_"),
             status=PatternStatus.draft,
-            creator_id=CURRENT_USER_ID,
+            creator_id=current_user_id,
             image_url=image_url if image_url else None,
             video_url=video_url if video_url else None
         )
@@ -161,14 +169,14 @@ def publish_draft(
     description: str = Form(default=""),
     db: Session = Depends(get_db)
 ):
-    # ORM: Получение черновика
+    current_user_id = get_current_user_id(db)
+    
     draft = db.query(LoadPattern).filter(
-        LoadPattern.creator_id == CURRENT_USER_ID,
+        LoadPattern.creator_id == current_user_id,
         LoadPattern.status == PatternStatus.draft
     ).first()
     
     if draft:
-        # ORM: Обновление и публикация
         draft.requests_per_second = requests_per_second
         draft.peak_multiplier = peak_multiplier
         draft.duration_hours = duration_hours
@@ -186,7 +194,6 @@ def delete_pattern(
     pattern_id: int,
     db: Session = Depends(get_db)
 ):
-    # SQL: Удаление через курсор (без ORM)
     sql = text("UPDATE load_patterns SET status = 'deleted' WHERE id = :pattern_id")
     db.execute(sql, {"pattern_id": pattern_id})
     db.commit()

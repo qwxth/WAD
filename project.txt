@@ -1,0 +1,57 @@
+===== PROJECT STRUCTURE =====
+.
+├── alembic.ini
+├── api
+│   ├── handlers.py
+│   └── __init__.py
+├── data
+│   ├── collections.py
+│   ├── database.py
+│   ├── __init__.py
+│   └── models.py
+├── docker-compose.yml
+├── figma_prototype
+│   ├── assets
+│   ├── index.html
+│   └── style.css
+├── init_data.py
+├── main.py
+├── migrations
+│   ├── env.py
+│   ├── script.py.mako
+│   └── versions
+│       └── 73423e95a024_initial_migration.py
+├── project.txt
+├── README.md
+├── requirements.txt
+├── screen
+│   ├── Без имени 1.docx
+│   ├── Без имени 1.odt
+│   ├── Отчет_об_устранении_замечаний_ИУ5_53Б_Андреев.docx
+│   └── Скриншоты.docx
+├── start.sh
+├── static
+│   ├── css
+│   │   └── style.css
+│   ├── img
+│   │   ├── ddos.jpg
+│   │   ├── ddos.mp4
+│   │   ├── default-pattern.jpg
+│   │   ├── default-pattern.mp4
+│   │   ├── growing.jpg
+│   │   ├── growing.mp4
+│   │   ├── peak.jpg
+│   │   ├── peak.mp4
+│   │   ├── uniform.jpg
+│   │   └── uniform.mp4
+│   └── video
+│       └── default-pattern.mp4
+├── templates
+│   ├── forecast_form.html
+│   ├── pattern_detail.html
+│   └── patterns.html
+└── test_video.html
+
+13 directories, 39 files
+
+===== SOURCE CODE =====

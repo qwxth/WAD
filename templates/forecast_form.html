@@ -48,19 +48,19 @@
                 <div class="lf-form__group">
                     <label class="lf-form__label" for="requests_per_second">Базовый RPS</label>
                     <input class="lf-form__input" type="number" id="requests_per_second" 
-                           name="requests_per_second" required placeholder="500">
+                           name="requests_per_second" min="1" required placeholder="500">
                 </div>
 
                 <div class="lf-form__group">
                     <label class="lf-form__label" for="peak_multiplier">Пиковый множитель</label>
                     <input class="lf-form__input" type="number" id="peak_multiplier" 
-                           name="peak_multiplier" step="0.1" required placeholder="2.0">
+                           name="peak_multiplier" min="0.1" step="0.1" required placeholder="2.0">
                 </div>
 
                 <div class="lf-form__group">
                     <label class="lf-form__label" for="duration_hours">Длительность (ч)</label>
                     <input class="lf-form__input" type="number" id="duration_hours" 
-                           name="duration_hours" required placeholder="24">
+                           name="duration_hours" min="1" required placeholder="24">
                 </div>
 
                 <div class="lf-form__group">
