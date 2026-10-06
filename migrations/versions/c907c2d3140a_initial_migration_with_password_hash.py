@@ -1,15 +1,15 @@
-"""Initial migration
+"""Initial migration with password_hash
 
-Revision ID: 73423e95a024
+Revision ID: c907c2d3140a
 Revises: 
-Create Date: 2026-09-22 11:47:11.188151
+Create Date: 2026-10-06 09:14:29.306794
 
 """
 from alembic import op
 import sqlalchemy as sa
 
 
-revision = '73423e95a024'
+revision = 'c907c2d3140a'
 down_revision = None
 branch_labels = None
 depends_on = None
@@ -21,6 +21,7 @@ def upgrade() -> None:
     sa.Column('id', sa.Integer(), nullable=False),
     sa.Column('username', sa.String(length=50), nullable=False),
     sa.Column('email', sa.String(length=100), nullable=False),
+    sa.Column('password_hash', sa.String(length=255), nullable=True),
     sa.Column('created_at', sa.DateTime(), nullable=True),
     sa.PrimaryKeyConstraint('id'),
     sa.UniqueConstraint('email'),
@@ -57,7 +58,8 @@ def upgrade() -> None:
     sa.Column('created_at', sa.DateTime(), nullable=True),
     sa.ForeignKeyConstraint(['pattern_id'], ['load_patterns.id'], ),
     sa.ForeignKeyConstraint(['user_id'], ['users.id'], ),
-    sa.PrimaryKeyConstraint('id')
+    sa.PrimaryKeyConstraint('id'),
+    sa.UniqueConstraint('user_id', 'pattern_id', name='uq_user_pattern_like')
     )
     op.create_index(op.f('ix_pattern_likes_id'), 'pattern_likes', ['id'], unique=False)
     # ### end Alembic commands ###

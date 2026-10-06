@@ -1,0 +1,272 @@
+{
+  "info": {
+    "name": "LoadForecast API",
+    "description": "Коллекция запросов для лабораторной работы №3",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    {
+      "key": "base_url",
+      "value": "http://127.0.0.1:8000"
+    }
+  ],
+  "item": [
+    {
+      "name": "01. GET список с фильтром",
+      "request": {
+        "method": "GET",
+        "url": {
+          "raw": "{{base_url}}/api/patterns?max_expected=200&min_rps=100",
+          "host": [
+            "{{base_url}}"
+          ],
+          "path": [
+            "api",
+            "patterns"
+          ],
+          "query": [
+            {
+              "key": "max_expected",
+              "value": "200"
+            },
+            {
+              "key": "min_rps",
+              "value": "100"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "name": "02. POST создать паттерн (image+video)",
+      "request": {
+        "method": "POST",
+        "url": {
+          "raw": "{{base_url}}/api/patterns",
+          "host": [
+            "{{base_url}}"
+          ],
+          "path": [
+            "api",
+            "patterns"
+          ]
+        },
+        "body": {
+          "mode": "formdata",
+          "formdata": [
+            {
+              "key": "pattern_name",
+              "value": "Test Pattern",
+              "type": "text"
+            },
+            {
+              "key": "description",
+              "value": "Описание тестового паттерна",
+              "type": "text"
+            },
+            {
+              "key": "use_case",
+              "value": "Нагрузочное тестирование",
+              "type": "text"
+            },
+            {
+              "key": "image",
+              "type": "file",
+              "src": []
+            },
+            {
+              "key": "video",
+              "type": "file",
+              "src": []
+            }
+          ]
+        }
+      }
+    },
+    {
+      "name": "03. GET черновик",
+      "request": {
+        "method": "GET",
+        "url": {
+          "raw": "{{base_url}}/api/patterns/draft",
+          "host": [
+            "{{base_url}}"
+          ],
+          "path": [
+            "api",
+            "patterns",
+            "draft"
+          ]
+        }
+      }
+    },
+    {
+      "name": "04. PUT публикация",
+      "request": {
+        "method": "PUT",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": {
+          "raw": "{{base_url}}/api/patterns/4/publish",
+          "host": [
+            "{{base_url}}"
+          ],
+          "path": [
+            "api",
+            "patterns",
+            "4",
+            "publish"
+          ]
+        },
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"requests_per_second\": 1000,\n  \"peak_multiplier\": 2.5,\n  \"duration_hours\": 12,\n  \"description\": \"Обновлённое описание\",\n  \"base_cpu_cores\": 8,\n  \"base_ram_gb\": 16\n}"
+        }
+      }
+    },
+    {
+      "name": "05. GET лента (без ID)",
+      "request": {
+        "method": "GET",
+        "url": {
+          "raw": "{{base_url}}/api/patterns/feed",
+          "host": [
+            "{{base_url}}"
+          ],
+          "path": [
+            "api",
+            "patterns",
+            "feed"
+          ]
+        }
+      }
+    },
+    {
+      "name": "06. GET лента по ID next=true",
+      "request": {
+        "method": "GET",
+        "url": {
+          "raw": "{{base_url}}/api/patterns/1?next=true",
+          "host": [
+            "{{base_url}}"
+          ],
+          "path": [
+            "api",
+            "patterns",
+            "1"
+          ],
+          "query": [
+            {
+              "key": "next",
+              "value": "true"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "name": "07. POST поставить лайк",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": {
+          "raw": "{{base_url}}/api/patterns/2/like",
+          "host": [
+            "{{base_url}}"
+          ],
+          "path": [
+            "api",
+            "patterns",
+            "2",
+            "like"
+          ]
+        },
+        "body": {
+          "mode": "raw",
+          "raw": "{\"value\": 1}"
+        }
+      }
+    },
+    {
+      "name": "08. POST убрать лайк",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": {
+          "raw": "{{base_url}}/api/patterns/2/like",
+          "host": [
+            "{{base_url}}"
+          ],
+          "path": [
+            "api",
+            "patterns",
+            "2",
+            "like"
+          ]
+        },
+        "body": {
+          "mode": "raw",
+          "raw": "{\"value\": 0}"
+        }
+      }
+    },
+    {
+      "name": "09. DELETE удалить паттерн",
+      "request": {
+        "method": "DELETE",
+        "url": {
+          "raw": "{{base_url}}/api/patterns/3",
+          "host": [
+            "{{base_url}}"
+          ],
+          "path": [
+            "api",
+            "patterns",
+            "3"
+          ]
+        }
+      }
+    },
+    {
+      "name": "10. POST регистрация",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": {
+          "raw": "{{base_url}}/api/users/register",
+          "host": [
+            "{{base_url}}"
+          ],
+          "path": [
+            "api",
+            "users",
+            "register"
+          ]
+        },
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"username\": \"newuser\",\n  \"email\": \"new@example.com\",\n  \"password\": \"secret123\"\n}"
+        }
+      }
+    }
+  ]
+}
