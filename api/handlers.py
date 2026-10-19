@@ -13,7 +13,6 @@ templates = Jinja2Templates(directory="templates")
 
 
 def get_current_user_id(db: Session) -> int:
-    """Получить ID первого пользователя из БД"""
     user = db.query(User).first()
     if not user:
         raise Exception("В БД нет пользователей! Выполните: python3 init_data.py")
@@ -22,28 +21,28 @@ def get_current_user_id(db: Session) -> int:
 
 @router.get("/")
 def root():
-    return RedirectResponse(url="/patterns")
+    return RedirectResponse(url="/load_patterns")
 
 
-@router.get("/patterns")
+@router.get("/load_patterns")
 def get_patterns_grid(
     request: Request,
     max_expected: int = Query(default=None, description="Фильтр по матожиданию"),
     db: Session = Depends(get_db)
 ):
     query = db.query(LoadPattern).filter(LoadPattern.status == PatternStatus.published)
-    
+
     if max_expected is not None:
         max_expected_full = max_expected * 1000000
         query = query.filter(LoadPattern.expected_request_count <= max_expected_full)
-    
+
     patterns = query.all()
-    
+
     for pattern in patterns:
         pattern.likes_count = db.query(PatternLike).filter(
             PatternLike.pattern_id == pattern.id
         ).count()
-    
+
     return templates.TemplateResponse(
         request=request,
         name="patterns.html",
@@ -54,62 +53,21 @@ def get_patterns_grid(
     )
 
 
-@router.get("/pattern/{pattern_id}")
-def get_pattern_detail(
-    request: Request,
-    pattern_id: int,
-    next: bool = Query(default=False),
-    db: Session = Depends(get_db)
-):
-    visible = db.query(LoadPattern).filter(
-        LoadPattern.status == PatternStatus.published
-    ).all()
-    
-    if not visible:
-        raise HTTPException(status_code=404, detail="Нет опубликованных паттернов")
-    
-    if next:
-        current_index = None
-        for i, p in enumerate(visible):
-            if p.id == pattern_id:
-                current_index = i
-                break
-        if current_index is not None and current_index + 1 < len(visible):
-            pattern = visible[current_index + 1]
-        else:
-            pattern = visible[0]
-    else:
-        pattern = db.query(LoadPattern).filter(
-            LoadPattern.id == pattern_id,
-            LoadPattern.status == PatternStatus.published
-        ).first()
-        
-        if not pattern:
-            raise HTTPException(status_code=404, detail="Паттерн не найден или удалён")
-    
-    pattern.likes_count = db.query(PatternLike).filter(
-        PatternLike.pattern_id == pattern.id
-    ).count()
-    
-    return templates.TemplateResponse(
-        request=request,
-        name="pattern_detail.html",
-        context={"pattern": pattern},
-    )
+# ВАЖНО: статические пути (/draft, /lenta) регистрируются
+# ДО динамического /{pattern_id}, иначе FastAPI матчит их как pattern_id и падает с 422.
 
-
-@router.get("/forecast")
+@router.get("/load_patterns/draft")
 def get_forecast_form(
     request: Request,
     db: Session = Depends(get_db)
 ):
     current_user_id = get_current_user_id(db)
-    
+
     draft = db.query(LoadPattern).filter(
         LoadPattern.creator_id == current_user_id,
         LoadPattern.status == PatternStatus.draft
     ).first()
-    
+
     forecast = None
     if draft and draft.requests_per_second:
         rps = draft.requests_per_second or 0
@@ -122,7 +80,7 @@ def get_forecast_form(
             "required_cpu": required_cpu,
             "required_ram": required_ram,
         }
-    
+
     return templates.TemplateResponse(
         request=request,
         name="forecast_form.html",
@@ -130,37 +88,58 @@ def get_forecast_form(
     )
 
 
-@router.post("/forecast/create")
+@router.get("/load_patterns/lenta")
+def lenta_entry(db: Session = Depends(get_db)):
+    """
+    Точка входа в ленту без хардкода ID=1.
+    Находит первый опубликованный паттерн через SQL (ORDER BY id LIMIT 1)
+    и редиректит на него. Так лента работает даже если ID начинаются не с 1
+    (из-за пропусков/сброса последовательности в Postgres).
+    """
+    first = db.query(LoadPattern).filter(
+        LoadPattern.status == PatternStatus.published
+    ).order_by(LoadPattern.id).first()
+
+    if not first:
+        raise HTTPException(status_code=404, detail="Нет опубликованных паттернов")
+
+    return RedirectResponse(url=f"/load_patterns/{first.id}")
+
+
+@router.post("/load_patterns/draft/create")
 def create_draft(
     request: Request,
     pattern_name: str = Form(...),
-    image_url: Optional[str] = Form(None),
-    video_url: Optional[str] = Form(None),
+    image_filename: Optional[str] = Form(None),
+    video_filename: Optional[str] = Form(None),
     db: Session = Depends(get_db)
 ):
     current_user_id = get_current_user_id(db)
-    
+
     existing_draft = db.query(LoadPattern).filter(
         LoadPattern.creator_id == current_user_id,
         LoadPattern.status == PatternStatus.draft
     ).first()
-    
+
     if not existing_draft:
+        image_url = f"/invalid-upload/{image_filename}" if image_filename else None
+        video_url = f"/invalid-upload/{video_filename}" if video_filename else None
+
         new_draft = LoadPattern(
             pattern_name=pattern_name,
             pattern_code=pattern_name.lower().replace(" ", "_").replace("-", "_"),
             status=PatternStatus.draft,
             creator_id=current_user_id,
-            image_url=image_url if image_url else None,
-            video_url=video_url if video_url else None
+            image_url=image_url,
+            video_url=video_url
         )
         db.add(new_draft)
         db.commit()
-    
-    return RedirectResponse(url="/forecast", status_code=303)
+
+    return RedirectResponse(url="/load_patterns/draft", status_code=303)
 
 
-@router.post("/forecast/publish")
+@router.post("/load_patterns/draft/publish")
 def publish_draft(
     request: Request,
     requests_per_second: int = Form(...),
@@ -170,12 +149,12 @@ def publish_draft(
     db: Session = Depends(get_db)
 ):
     current_user_id = get_current_user_id(db)
-    
+
     draft = db.query(LoadPattern).filter(
         LoadPattern.creator_id == current_user_id,
         LoadPattern.status == PatternStatus.draft
     ).first()
-    
+
     if draft:
         draft.requests_per_second = requests_per_second
         draft.peak_multiplier = peak_multiplier
@@ -185,11 +164,51 @@ def publish_draft(
         draft.average_request_count = requests_per_second
         draft.status = PatternStatus.published
         db.commit()
-    
-    return RedirectResponse(url="/patterns", status_code=303)
+
+    return RedirectResponse(url="/load_patterns", status_code=303)
 
 
-@router.post("/pattern/{pattern_id}/delete")
+@router.get("/load_patterns/{pattern_id}")
+def get_pattern_detail(
+    request: Request,
+    pattern_id: int,
+    next: bool = Query(default=False),
+    db: Session = Depends(get_db)
+):
+    if next:
+        pattern = db.query(LoadPattern).filter(
+            LoadPattern.status == PatternStatus.published,
+            LoadPattern.id > pattern_id
+        ).order_by(LoadPattern.id).first()
+
+        if not pattern:
+            pattern = db.query(LoadPattern).filter(
+                LoadPattern.status == PatternStatus.published
+            ).order_by(LoadPattern.id).first()
+
+        if not pattern:
+            raise HTTPException(status_code=404, detail="Нет опубликованных паттернов")
+    else:
+        pattern = db.query(LoadPattern).filter(
+            LoadPattern.id == pattern_id,
+            LoadPattern.status == PatternStatus.published
+        ).first()
+
+        if not pattern:
+            raise HTTPException(status_code=404, detail="Паттерн не найден или удалён")
+
+    pattern.likes_count = db.query(PatternLike).filter(
+        PatternLike.pattern_id == pattern.id
+    ).count()
+
+    return templates.TemplateResponse(
+        request=request,
+        name="pattern_detail.html",
+        context={"pattern": pattern},
+    )
+
+
+@router.post("/load_patterns/{pattern_id}/delete")
 def delete_pattern(
     pattern_id: int,
     db: Session = Depends(get_db)
@@ -197,5 +216,5 @@ def delete_pattern(
     sql = text("UPDATE load_patterns SET status = 'deleted' WHERE id = :pattern_id")
     db.execute(sql, {"pattern_id": pattern_id})
     db.commit()
-    
-    return RedirectResponse(url="/patterns", status_code=303)
+
+    return RedirectResponse(url="/load_patterns", status_code=303)

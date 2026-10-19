@@ -568,3 +568,27 @@ img, video { display: block; max-width: 100%; }
 .lf-tabs__item:active { opacity: 0.5; }
 .lf-tabs__item--active { color: #FF6600; }
 .lf-tabs__label { font-size: 10px; }
+
+/* ===== lab4-authorization-swagger: единый стиль всех кнопок (форма, без изменения цветов) ===== */
+.lf-btn-pill {
+    display: inline-block;
+    padding: 10px 22px;
+    border-radius: 999px;
+    font-weight: 600;
+    font-size: 14px;
+    text-align: center;
+    cursor: pointer;
+    border: none;
+}
+
+/* ===== lab4-authorization-swagger: единый стиль всех кнопок (форма, без изменения цветов) ===== */
+.lf-btn-pill {
+    display: inline-block;
+    padding: 10px 22px;
+    border-radius: 999px;
+    font-weight: 600;
+    font-size: 14px;
+    text-align: center;
+    cursor: pointer;
+    border: none;
+}
