@@ -16,13 +16,13 @@
       "request": {
         "method": "GET",
         "url": {
-          "raw": "{{base_url}}/api/patterns?max_expected=200&min_rps=100",
+          "raw": "{{base_url}}/api/load_patterns?max_expected=200&min_rps=100",
           "host": [
             "{{base_url}}"
           ],
           "path": [
             "api",
-            "patterns"
+            "load_patterns"
           ],
           "query": [
             {
@@ -42,13 +42,13 @@
       "request": {
         "method": "POST",
         "url": {
-          "raw": "{{base_url}}/api/patterns",
+          "raw": "{{base_url}}/api/load_patterns",
           "host": [
             "{{base_url}}"
           ],
           "path": [
             "api",
-            "patterns"
+            "load_patterns"
           ]
         },
         "body": {
@@ -88,13 +88,13 @@
       "request": {
         "method": "GET",
         "url": {
-          "raw": "{{base_url}}/api/patterns/draft",
+          "raw": "{{base_url}}/api/load_patterns/draft",
           "host": [
             "{{base_url}}"
           ],
           "path": [
             "api",
-            "patterns",
+            "load_patterns",
             "draft"
           ]
         }
@@ -111,13 +111,13 @@
           }
         ],
         "url": {
-          "raw": "{{base_url}}/api/patterns/4/publish",
+          "raw": "{{base_url}}/api/load_patterns/4/publish",
           "host": [
             "{{base_url}}"
           ],
           "path": [
             "api",
-            "patterns",
+            "load_patterns",
             "4",
             "publish"
           ]
@@ -129,17 +129,17 @@
       }
     },
     {
-      "name": "05. GET лента (без ID)",
+      "name": "05. GET лента без ID (теперь ОДИН объект, не массив)",
       "request": {
         "method": "GET",
         "url": {
-          "raw": "{{base_url}}/api/patterns/feed",
+          "raw": "{{base_url}}/api/load_patterns/feed",
           "host": [
             "{{base_url}}"
           ],
           "path": [
             "api",
-            "patterns",
+            "load_patterns",
             "feed"
           ]
         }
@@ -150,13 +150,13 @@
       "request": {
         "method": "GET",
         "url": {
-          "raw": "{{base_url}}/api/patterns/1?next=true",
+          "raw": "{{base_url}}/api/load_patterns/1?next=true",
           "host": [
             "{{base_url}}"
           ],
           "path": [
             "api",
-            "patterns",
+            "load_patterns",
             "1"
           ],
           "query": [
@@ -179,13 +179,13 @@
           }
         ],
         "url": {
-          "raw": "{{base_url}}/api/patterns/2/like",
+          "raw": "{{base_url}}/api/load_patterns/2/like",
           "host": [
             "{{base_url}}"
           ],
           "path": [
             "api",
-            "patterns",
+            "load_patterns",
             "2",
             "like"
           ]
@@ -207,13 +207,13 @@
           }
         ],
         "url": {
-          "raw": "{{base_url}}/api/patterns/2/like",
+          "raw": "{{base_url}}/api/load_patterns/2/like",
           "host": [
             "{{base_url}}"
           ],
           "path": [
             "api",
-            "patterns",
+            "load_patterns",
             "2",
             "like"
           ]
@@ -229,13 +229,13 @@
       "request": {
         "method": "DELETE",
         "url": {
-          "raw": "{{base_url}}/api/patterns/3",
+          "raw": "{{base_url}}/api/load_patterns/3",
           "host": [
             "{{base_url}}"
           ],
           "path": [
             "api",
-            "patterns",
+            "load_patterns",
             "3"
           ]
         }

@@ -10,15 +10,10 @@ from api.schemas import (
 )
 from api.auth import get_current_user
 
-router = APIRouter(prefix="/api/patterns", tags=["patterns"])
+router = APIRouter(prefix="/api/load_patterns", tags=["load_patterns"])
 
 
 def _enrich_pattern(pattern: LoadPattern, db: Session, current_user: User) -> dict:
-    """
-    Сериализация модели LoadPattern -> PatternResponse.
-    Добавляет вычисляемые поля is_owner, is_liked, likes_count,
-    которые не хранятся в БД напрямую, а вычисляются на лету.
-    """
     likes_count = db.query(PatternLike).filter(PatternLike.pattern_id == pattern.id).count()
     is_liked = db.query(PatternLike).filter(
         PatternLike.pattern_id == pattern.id,
@@ -48,8 +43,7 @@ def _enrich_pattern(pattern: LoadPattern, db: Session, current_user: User) -> di
     }
 
 
-# ========== GET список (с фильтрацией) ==========
-# Признак is_owner: 0/1 если создатель услуги совпадает с текущим пользователем
+# ========== 1. GET список (с фильтрацией по матожиданию/RPS/поиску) ==========
 @router.get("", response_model=PatternListResponse)
 def list_patterns(
     max_expected: Optional[int] = Query(None, description="Макс. матожидание (млн)"),
@@ -58,7 +52,7 @@ def list_patterns(
     search: Optional[str] = Query(None, description="Поиск по названию"),
     db: Session = Depends(get_db),
 ):
-    current_user = get_current_user(db)  # singleton-функция
+    current_user = get_current_user(db)
     query = db.query(LoadPattern).filter(LoadPattern.status == PatternStatus.published)
 
     if max_expected is not None:
@@ -75,18 +69,31 @@ def list_patterns(
     return {"items": items, "total": len(items)}
 
 
-# ========== GET лента без ID (признак is_liked) ==========
-@router.get("/feed", response_model=PatternListResponse)
-def feed_patterns(db: Session = Depends(get_db)):
+# ========== 2. GET лента — ВСЕГДА ОДНА ЗАПИСЬ (не массив!) ==========
+# another=0/1: 0 - первая опубликованная запись, 1 - следующая после current_id
+@router.get("/feed", response_model=PatternResponse)
+def feed_patterns(
+    current_id: Optional[int] = Query(None, description="ID последней показанной записи"),
+    another: int = Query(0, ge=0, le=1, description="1 - показать другую запись"),
+    db: Session = Depends(get_db),
+):
     current_user = get_current_user(db)
-    patterns = db.query(LoadPattern).filter(
-        LoadPattern.status == PatternStatus.published
-    ).order_by(LoadPattern.id).all()
-    items = [_enrich_pattern(p, db, current_user) for p in patterns]
-    return {"items": items, "total": len(items)}
+    base_query = db.query(LoadPattern).filter(LoadPattern.status == PatternStatus.published)
+
+    pattern = None
+    if another == 1 and current_id is not None:
+        pattern = base_query.filter(LoadPattern.id > current_id).order_by(LoadPattern.id).first()
+
+    if pattern is None:
+        pattern = base_query.order_by(LoadPattern.id).first()
+
+    if not pattern:
+        raise HTTPException(status_code=404, detail="Нет опубликованных паттернов")
+
+    return _enrich_pattern(pattern, db, current_user)
 
 
-# ========== GET черновик (не более 1, без ID) ==========
+# ========== 3. GET черновик (не более 1, без ID) ==========
 @router.get("/draft", response_model=PatternResponse)
 def get_draft(db: Session = Depends(get_db)):
     current_user = get_current_user(db)
@@ -99,38 +106,33 @@ def get_draft(db: Session = Depends(get_db)):
     return _enrich_pattern(draft, db, current_user)
 
 
-# ========== GET лента по ID (?next=true — получить следующую карточку) ==========
+# ========== 4. GET по ID (?next=true — следующая запись ЧЕРЕЗ SQL, не через python-список) ==========
 @router.get("/{pattern_id}", response_model=PatternResponse)
 def get_pattern(
     pattern_id: int,
-    next: bool = Query(default=False, description="Если true — вернуть следующий паттерн в ленте"),
+    next: bool = Query(default=False, description="Если true - вернуть следующий паттерн"),
     db: Session = Depends(get_db),
 ):
     current_user = get_current_user(db)
 
     if next:
-        # Логика "следующая карточка в ленте" (как свайп в Reels)
-        visible = db.query(LoadPattern).filter(
-            LoadPattern.status == PatternStatus.published
-        ).order_by(LoadPattern.id).all()
+        # Запрос в БД с учётом пропусков ID (soft-delete создаёт дыры)
+        pattern = db.query(LoadPattern).filter(
+            LoadPattern.status == PatternStatus.published,
+            LoadPattern.id > pattern_id
+        ).order_by(LoadPattern.id).first()
 
-        if not visible:
+        if not pattern:
+            # дошли до конца -> циклически на первую запись
+            pattern = db.query(LoadPattern).filter(
+                LoadPattern.status == PatternStatus.published
+            ).order_by(LoadPattern.id).first()
+
+        if not pattern:
             raise HTTPException(status_code=404, detail="Нет опубликованных паттернов")
-
-        current_index = None
-        for i, p in enumerate(visible):
-            if p.id == pattern_id:
-                current_index = i
-                break
-
-        if current_index is not None and current_index + 1 < len(visible):
-            pattern = visible[current_index + 1]
-        else:
-            pattern = visible[0]  # зацикливаем ленту
 
         return _enrich_pattern(pattern, db, current_user)
 
-    # Обычное получение паттерна по ID
     pattern = db.query(LoadPattern).filter(
         LoadPattern.id == pattern_id,
         LoadPattern.status != PatternStatus.deleted
@@ -142,9 +144,7 @@ def get_pattern(
     return _enrich_pattern(pattern, db, current_user)
 
 
-# ========== POST создание (с файлами image+video) ==========
-# Системные поля (id, status, creator_id, created_at) с клиента НЕ принимаются —
-# они вычисляются на бэкенде через get_current_user() и бизнес-логику.
+# ========== 5. POST создание (файлы image+video) ==========
 @router.post("", response_model=PatternResponse, status_code=201)
 async def create_pattern(
     pattern_name: str = Form(...),
@@ -154,7 +154,7 @@ async def create_pattern(
     video: Optional[UploadFile] = File(None),
     db: Session = Depends(get_db),
 ):
-    current_user = get_current_user(db)  # singleton - определяет создателя
+    current_user = get_current_user(db)
 
     existing = db.query(LoadPattern).filter(
         LoadPattern.creator_id == current_user.id,
@@ -168,7 +168,7 @@ async def create_pattern(
 
     if image and image.filename:
         img_bytes = await image.read()
-        fname = generate_latin_filename(image.filename)  # латинское имя
+        fname = generate_latin_filename(image.filename)
         image_url = upload_file(img_bytes, fname, image.content_type or "image/jpeg")
 
     if video and video.filename:
@@ -182,8 +182,8 @@ async def create_pattern(
     new_pattern = LoadPattern(
         pattern_name=pattern_name,
         pattern_code=pattern_code,
-        status=PatternStatus.draft,       # системное поле - только draft при создании
-        creator_id=current_user.id,       # системное поле - из singleton, не от клиента
+        status=PatternStatus.draft,
+        creator_id=current_user.id,
         description=description,
         use_case=use_case,
         image_url=image_url,
@@ -195,7 +195,7 @@ async def create_pattern(
     return _enrich_pattern(new_pattern, db, current_user)
 
 
-# ========== PUT публикация (смена статуса draft -> published, НАЗАД НЕЛЬЗЯ) ==========
+# ========== 6. PUT публикация (draft -> published, назад нельзя) ==========
 @router.put("/{pattern_id}/publish", response_model=PatternResponse)
 def publish_pattern(
     pattern_id: int,
@@ -209,7 +209,6 @@ def publish_pattern(
     if pattern.creator_id != current_user.id:
         raise HTTPException(status_code=403, detail="Только владелец может публиковать")
     if pattern.status != PatternStatus.draft:
-        # Бизнес-правило: публиковать можно ТОЛЬКО из draft. Опубликованное нельзя снова "опубликовать".
         raise HTTPException(status_code=400, detail="Публиковать можно только черновики")
 
     if data.pattern_name:
@@ -225,14 +224,14 @@ def publish_pattern(
         data.requests_per_second * data.peak_multiplier * data.duration_hours * 3600
     )
     pattern.average_request_count = data.requests_per_second
-    pattern.status = PatternStatus.published  # системное поле - вычисляется, не от клиента
+    pattern.status = PatternStatus.published
 
     db.commit()
     db.refresh(pattern)
     return _enrich_pattern(pattern, db, current_user)
 
 
-# ========== DELETE (soft delete, только свои, НАЗАД В DRAFT НЕЛЬЗЯ) ==========
+# ========== 7. DELETE (soft delete, только свои) ==========
 @router.delete("/{pattern_id}", response_model=MessageResponse)
 def delete_pattern(pattern_id: int, db: Session = Depends(get_db)):
     current_user = get_current_user(db)
@@ -244,15 +243,15 @@ def delete_pattern(pattern_id: int, db: Session = Depends(get_db)):
     if pattern.status == PatternStatus.deleted:
         raise HTTPException(status_code=400, detail="Паттерн уже удалён")
 
-    pattern.status = PatternStatus.deleted  # soft delete - запись остаётся в БД
+    pattern.status = PatternStatus.deleted
     db.commit()
     return {"message": f"Паттерн {pattern_id} удалён (soft delete)"}
 
 
-# ========== POST лайк (0/1 от текущего пользователя) ==========
+# ========== 8. POST лайк (0/1) ==========
 @router.post("/{pattern_id}/like", response_model=MessageResponse)
 def like_pattern(pattern_id: int, data: LikeRequest, db: Session = Depends(get_db)):
-    current_user = get_current_user(db)  # singleton
+    current_user = get_current_user(db)
     pattern = db.query(LoadPattern).filter(
         LoadPattern.id == pattern_id,
         LoadPattern.status == PatternStatus.published

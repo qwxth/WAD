@@ -12,25 +12,24 @@
     <header class="lf-header lf-header--dark">
         <div class="lf-header__inner"></div>
     </header>
-    <a href="/forecast" class="lf-account-btn">Добавить</a>
 
     <main class="lf-reel">
         <div class="lf-reel__viewport">
-            <video class="lf-reel__video" autoplay loop muted playsinline 
+            <video class="lf-reel__video" autoplay loop muted playsinline
                    onerror="this.style.display='none'; this.nextElementSibling.style.display='block'">
                 <source src="{{ pattern.video_url if pattern.video_url else '/static/video/default-pattern.mp4' }}" type="video/mp4">
             </video>
-            <img class="lf-reel__video" style="display:none; object-fit:cover;" 
+            <img class="lf-reel__video" style="display:none; object-fit:cover;"
                  src="{{ pattern.image_url if pattern.image_url else '/static/img/default-pattern.jpg' }}"
                  onerror="this.src='/static/img/default-pattern.jpg'">
             <div class="lf-reel__overlay">
                 <div class="lf-reel__top"></div>
                 <div class="lf-reel__bottom">
-                    
+
                     <div class="lf-reel__content">
                         <div class="lf-reel__left">
                             <h2 class="lf-reel__title">{{ pattern.pattern_name }}</h2>
-                            
+
                             <details class="lf-reel__desc">
                                 <summary class="lf-reel__desc-summary">
                                     {{ pattern.description[:70] if pattern.description else 'Нет описания' }}... <span class="lf-reel__more">Еще</span>
@@ -41,7 +40,7 @@
                                 </div>
                             </details>
                         </div>
-                        
+
                         <div class="lf-reel__right">
                             <div class="lf-reel__specs">
                                 <div class="lf-reel__spec">
@@ -53,27 +52,27 @@
                                     <span class="lf-reel__spec-label">Среднее</span>
                                 </div>
                             </div>
-                            
+
                             <div class="lf-reel__actions-right">
                                 <span class="lf-reel__likes">❤️ {{ pattern.likes_count }}</span>
-                                <a href="/pattern/{{ pattern.id }}?next=true" class="lf-reel__next-btn">Далее</a>
+                                <a href="/load_patterns/{{ pattern.id }}?next=true" class="lf-reel__next-btn lf-btn-pill">Далее</a>
                             </div>
                         </div>
                     </div>
-                    
+
                 </div>
             </div>
         </div>
     </main>
 
     <nav class="lf-tabs">
-        <a href="/pattern/{{ pattern.id }}" class="lf-tabs__item lf-tabs__item--active">
+        <a href="/load_patterns/{{ pattern.id }}" class="lf-tabs__item lf-tabs__item--active">
             <span class="lf-tabs__label">Лента</span>
         </a>
-        <a href="/forecast" class="lf-tabs__item">
+        <a href="/load_patterns/draft" class="lf-tabs__item">
             <span class="lf-tabs__label">Заявка</span>
         </a>
-        <a href="/patterns" class="lf-tabs__item">
+        <a href="/load_patterns" class="lf-tabs__item">
             <span class="lf-tabs__label">Плитка</span>
         </a>
     </nav>
