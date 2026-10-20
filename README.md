@@ -1,4 +1,3 @@
-cat > ~/labs/WAD/README_LAB3.md << 'EOF'
 # Лабораторная работа №3 — Создание REST веб-сервиса для SPA
 
 ## Цель работы
@@ -105,6 +104,3 @@ cat > ~/labs/WAD/README_LAB3.md << 'EOF'
 - База данных: PostgreSQL
 - Хранилище файлов: MinIO (S3-совместимое)
 - Формат передачи медиафайлов: multipart/form-data
-EOF
-echo "Файл создан:"
-ls -la ~/labs/WAD/README_LAB3.md
