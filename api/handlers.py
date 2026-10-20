@@ -88,7 +88,7 @@ def get_forecast_form(
     )
 
 
-@router.get("/load_patterns/lenta")
+@router.get("/load_patterns/feed")
 def lenta_entry(db: Session = Depends(get_db)):
     """
     Точка входа в ленту без хардкода ID=1.

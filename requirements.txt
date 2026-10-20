@@ -8,3 +8,4 @@ psycopg[binary]==3.3.6
 minio==7.2.9
 pydantic>=2.9
 email-validator>=2.0
+redis==5.2.1  # fedora offline: ставится через dnf install python3-redis
