@@ -23,6 +23,17 @@ SESSION_TTL_SECONDS = 60 * 60 * 24  # 24 часа
 
 redis_client = redis.Redis(host="localhost", port=6379, db=0, decode_responses=True)
 
+# Lua-скрипт выполняется внутри Redis атомарно: читает user_id по ключу сессии
+# и в том же вызове продлевает TTL. Если ключа нет (сессия истекла или удалена),
+# возвращается nil и TTL не создаётся.
+LUA_GET_AND_EXTEND = """
+local val = redis.call('GET', KEYS[1])
+if val then
+    redis.call('EXPIRE', KEYS[1], ARGV[1])
+end
+return val
+"""
+
 # Схема для Swagger UI: рисует кнопку "Authorize" (замочек),
 # куда можно вручную вписать значение cookie session_id для теста защищённых методов.
 cookie_scheme = APIKeyCookie(name=SESSION_COOKIE_NAME, auto_error=False)
@@ -49,7 +60,7 @@ def delete_session(session_id: str) -> None:
 def _user_id_from_session(session_id: Optional[str]) -> Optional[int]:
     if not session_id:
         return None
-    raw = redis_client.get(f"session:{session_id}")
+    raw = redis_client.eval(LUA_GET_AND_EXTEND, 1, f"session:{session_id}", SESSION_TTL_SECONDS)
     if raw is None:
         return None
     return int(raw)

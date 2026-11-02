@@ -8,11 +8,111 @@
     {
       "key": "base_url",
       "value": "http://127.0.0.1:8000"
+    },
+    {
+      "key": "username",
+      "value": "postman_user"
+    },
+    {
+      "key": "email",
+      "value": "postman_user@example.com"
+    },
+    {
+      "key": "password",
+      "value": "secret123"
     }
   ],
   "item": [
     {
-      "name": "01. GET список с фильтром",
+      "name": "01. POST регистрация",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": {
+          "raw": "{{base_url}}/api/users/register",
+          "host": [
+            "{{base_url}}"
+          ],
+          "path": [
+            "api",
+            "users",
+            "register"
+          ]
+        },
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"username\": \"{{username}}\",\n  \"email\": \"{{email}}\",\n  \"password\": \"{{password}}\"\n}"
+        }
+      },
+      "event": [
+        {
+          "listen": "prerequest",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "const u = 'user' + Date.now();",
+              "pm.collectionVariables.set('username', u);",
+              "pm.collectionVariables.set('email', u + '@example.com');"
+            ]
+          }
+        },
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('201 Created', function () { pm.response.to.have.status(201); });"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "02. POST вход (login)",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": {
+          "raw": "{{base_url}}/api/users/login",
+          "host": [
+            "{{base_url}}"
+          ],
+          "path": [
+            "api",
+            "users",
+            "login"
+          ]
+        },
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"username\": \"{{username}}\",\n  \"password\": \"{{password}}\"\n}"
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('200 OK', function () { pm.response.to.have.status(200); });",
+              "pm.test('cookie session_id установлена', function () { pm.expect(pm.cookies.has('session_id')).to.be.true; });"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "03. GET список с фильтром",
       "request": {
         "method": "GET",
         "url": {
@@ -38,7 +138,7 @@
       }
     },
     {
-      "name": "02. POST создать паттерн (image+video)",
+      "name": "04. POST создать паттерн (image+video)",
       "request": {
         "method": "POST",
         "url": {
@@ -84,7 +184,7 @@
       }
     },
     {
-      "name": "03. GET черновик",
+      "name": "05. GET черновик",
       "request": {
         "method": "GET",
         "url": {
@@ -101,7 +201,7 @@
       }
     },
     {
-      "name": "04. PUT публикация",
+      "name": "06. PUT публикация",
       "request": {
         "method": "PUT",
         "header": [
@@ -129,7 +229,7 @@
       }
     },
     {
-      "name": "05. GET лента без ID (теперь ОДИН объект, не массив)",
+      "name": "07. GET лента без ID (один объект)",
       "request": {
         "method": "GET",
         "url": {
@@ -146,7 +246,7 @@
       }
     },
     {
-      "name": "06. GET лента по ID next=true",
+      "name": "08. GET лента по ID next=true",
       "request": {
         "method": "GET",
         "url": {
@@ -169,7 +269,7 @@
       }
     },
     {
-      "name": "07. POST поставить лайк",
+      "name": "09. POST поставить лайк",
       "request": {
         "method": "POST",
         "header": [
@@ -197,7 +297,7 @@
       }
     },
     {
-      "name": "08. POST убрать лайк",
+      "name": "10. POST убрать лайк",
       "request": {
         "method": "POST",
         "header": [
@@ -225,7 +325,7 @@
       }
     },
     {
-      "name": "09. DELETE удалить паттерн",
+      "name": "11. DELETE удалить паттерн",
       "request": {
         "method": "DELETE",
         "url": {
@@ -242,7 +342,7 @@
       }
     },
     {
-      "name": "10. POST регистрация",
+      "name": "12. POST выход (logout)",
       "request": {
         "method": "POST",
         "header": [
@@ -252,21 +352,28 @@
           }
         ],
         "url": {
-          "raw": "{{base_url}}/api/users/register",
+          "raw": "{{base_url}}/api/users/logout",
           "host": [
             "{{base_url}}"
           ],
           "path": [
             "api",
             "users",
-            "register"
+            "logout"
           ]
-        },
-        "body": {
-          "mode": "raw",
-          "raw": "{\n  \"username\": \"newuser\",\n  \"email\": \"new@example.com\",\n  \"password\": \"secret123\"\n}"
         }
-      }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('200 OK', function () { pm.response.to.have.status(200); });"
+            ]
+          }
+        }
+      ]
     }
   ]
 }
