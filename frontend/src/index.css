@@ -1,0 +1,23 @@
+:root {
+  --lf-orange: #ff8a00;
+  --lf-card: #f1f1f1;
+}
+body {
+  background: #fff;
+  padding-bottom: 90px;
+}
+.lf-card {
+  background: var(--lf-card);
+  border: 2px solid transparent;
+  transition: border-color 0.15s;
+}
+.lf-card:hover {
+  border-color: var(--lf-orange);
+}
+.lf-btn-pill {
+  --bs-btn-border-width: 2px;
+  --bs-btn-hover-bg: #000;
+  --bs-btn-hover-color: #fff;
+  --bs-btn-hover-border-color: var(--lf-orange);
+  --bs-btn-active-border-color: var(--lf-orange);
+}
