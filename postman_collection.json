@@ -20,6 +20,10 @@
     {
       "key": "password",
       "value": "secret123"
+    },
+    {
+      "key": "pattern_id",
+      "value": "1"
     }
   ],
   "item": [
@@ -181,7 +185,19 @@
             }
           ]
         }
-      }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('Паттерн создан', function () { pm.expect(pm.response.code).to.be.oneOf([200, 201]); });",
+              "pm.collectionVariables.set('pattern_id', pm.response.json().id);"
+            ]
+          }
+        }
+      ]
     },
     {
       "name": "05. GET черновик",
@@ -211,14 +227,14 @@
           }
         ],
         "url": {
-          "raw": "{{base_url}}/api/load_patterns/4/publish",
+          "raw": "{{base_url}}/api/load_patterns/{{pattern_id}}/publish",
           "host": [
             "{{base_url}}"
           ],
           "path": [
             "api",
             "load_patterns",
-            "4",
+            "{{pattern_id}}",
             "publish"
           ]
         },
@@ -250,14 +266,14 @@
       "request": {
         "method": "GET",
         "url": {
-          "raw": "{{base_url}}/api/load_patterns/1?next=true",
+          "raw": "{{base_url}}/api/load_patterns/{{pattern_id}}?next=true",
           "host": [
             "{{base_url}}"
           ],
           "path": [
             "api",
             "load_patterns",
-            "1"
+            "{{pattern_id}}"
           ],
           "query": [
             {
@@ -279,14 +295,14 @@
           }
         ],
         "url": {
-          "raw": "{{base_url}}/api/load_patterns/2/like",
+          "raw": "{{base_url}}/api/load_patterns/{{pattern_id}}/like",
           "host": [
             "{{base_url}}"
           ],
           "path": [
             "api",
             "load_patterns",
-            "2",
+            "{{pattern_id}}",
             "like"
           ]
         },
@@ -307,14 +323,14 @@
           }
         ],
         "url": {
-          "raw": "{{base_url}}/api/load_patterns/2/like",
+          "raw": "{{base_url}}/api/load_patterns/{{pattern_id}}/like",
           "host": [
             "{{base_url}}"
           ],
           "path": [
             "api",
             "load_patterns",
-            "2",
+            "{{pattern_id}}",
             "like"
           ]
         },
@@ -329,14 +345,14 @@
       "request": {
         "method": "DELETE",
         "url": {
-          "raw": "{{base_url}}/api/load_patterns/3",
+          "raw": "{{base_url}}/api/load_patterns/{{pattern_id}}",
           "host": [
             "{{base_url}}"
           ],
           "path": [
             "api",
             "load_patterns",
-            "3"
+            "{{pattern_id}}"
           ]
         }
       }
