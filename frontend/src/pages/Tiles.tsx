@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import { Col, Row } from 'react-bootstrap';
+import Breadcrumbs from '../components/Breadcrumbs';
 import PatternCard from '../components/PatternCard';
 import PatternFilter from '../components/PatternFilter';
 import { EMPTY_FILTER } from '../constants';
@@ -20,7 +21,8 @@ export default function Tiles() {
 
   return (
     <>
-      <h2 className="mb-3">Плитка паттернов нагрузки</h2>
+      <Breadcrumbs current="Плитка" />
+      <h1 className="h2 mb-3">Плитка паттернов нагрузки</h1>
       <PatternFilter
         values={draft}
         onChange={setDraft}

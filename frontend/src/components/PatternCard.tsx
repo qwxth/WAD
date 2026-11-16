@@ -18,7 +18,7 @@ export default function PatternCard({ pattern }: PatternCardProps) {
         height={160}
       />
       <Card.Body className="d-flex flex-column">
-        <Card.Title>{pattern.pattern_name}</Card.Title>
+        <Card.Title as="h2" className="h5">{pattern.pattern_name}</Card.Title>
         <Card.Text>
           RPS: {pattern.requests_per_second.toLocaleString('ru-RU')}
           <br />

@@ -1,0 +1,315 @@
+{
+  "info": {
+    "name": "ЛР3 LoadForecast",
+    "description": "Десять запросов для ветки lab3-web-service. Запуск из корня WAD для чтения файлов static. Задайте demo_password длиной от 6 символов. Подготовьте опубликованные паттерны и проверьте отсутствие черновика у учебного пользователя.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    {
+      "key": "base_url",
+      "value": "http://127.0.0.1:8000"
+    },
+    {
+      "key": "demo_password",
+      "value": ""
+    }
+  ],
+  "item": [
+    {
+      "name": "01 GET список с фильтром",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": "{{base_url}}/api/load_patterns?min_rps=100&max_rps=1000"
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"HTTP 200\", () => pm.response.to.have.status(200));",
+              "const data = pm.response.json();",
+              "pm.test(\"Паттерны опубликованы и соблюдают диапазон RPS\", () => { pm.expect(data.items.length).to.be.greaterThan(0); data.items.forEach(p => { pm.expect(p.status).to.eql(\"published\"); pm.expect(p.requests_per_second).to.be.within(100, 1000) }); });",
+              "pm.collectionVariables.set(\"first_id\", data.items[0].id)",
+              "console.log(JSON.stringify({total: data.total, items: data.items.map(p => ({id:p.id, pattern_name:p.pattern_name, requests_per_second:p.requests_per_second, status:p.status}))}));"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "02 POST создать паттерн с медиа",
+      "request": {
+        "method": "POST",
+        "header": [],
+        "url": "{{base_url}}/api/load_patterns",
+        "body": {
+          "mode": "formdata",
+          "formdata": [
+            {
+              "key": "pattern_name",
+              "value": "Паттерн для проверки ЛР-3",
+              "type": "text"
+            },
+            {
+              "key": "image",
+              "src": "static/img/uniform.jpg",
+              "type": "file"
+            },
+            {
+              "key": "video",
+              "src": "static/img/default-pattern.mp4",
+              "type": "file"
+            }
+          ]
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"HTTP 201\", () => pm.response.to.have.status(201));",
+              "const data = pm.response.json();",
+              "pm.test(\"Статус draft, ссылки на оба файла\", () => { pm.expect(data.status).to.eql(\"draft\"); pm.expect(data.image_url).to.match(/\\/pattern_[a-f0-9]+\\.jpg$/); pm.expect(data.video_url).to.match(/\\/pattern_[a-f0-9]+\\.mp4$/); });",
+              "pm.collectionVariables.set(\"pattern_id\", data.id)",
+              "console.log(JSON.stringify({id: data.id, status: data.status, image_url: data.image_url, video_url: data.video_url}));"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "03 GET текущий черновик",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": "{{base_url}}/api/load_patterns/draft"
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"HTTP 200\", () => pm.response.to.have.status(200));",
+              "const data = pm.response.json();",
+              "pm.test(\"Получен свой черновик\", () => { pm.expect(data.status).to.eql(\"draft\"); pm.expect(String(data.id)).to.eql(pm.collectionVariables.get(\"pattern_id\").toString()); });",
+              "console.log(JSON.stringify({id:data.id, status:data.status, requests_per_second:data.requests_per_second}));"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "04 PUT публикация паттерна",
+      "request": {
+        "method": "PUT",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": "{{base_url}}/api/load_patterns/{{pattern_id}}/publish",
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"requests_per_second\": 1000,\n  \"peak_multiplier\": 2.5,\n  \"duration_hours\": 12,\n  \"description\": \"Проверка публикации паттерна.\",\n  \"base_cpu_cores\": 8,\n  \"base_ram_gb\": 16\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"HTTP 200\", () => pm.response.to.have.status(200));",
+              "const data = pm.response.json();",
+              "pm.test(\"Паттерн опубликован, результат расчета 108 млн\", () => { pm.expect(data.status).to.eql(\"published\"); pm.expect(data.expected_request_count).to.eql(108000000); });",
+              "console.log(JSON.stringify({id:data.id, status:data.status, expected_request_count:data.expected_request_count}));"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "05 GET лента без ID",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": "{{base_url}}/api/load_patterns/feed"
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"HTTP 200\", () => pm.response.to.have.status(200));",
+              "const data = pm.response.json();",
+              "pm.test(\"В ответе один опубликованный объект\", () => { pm.expect(data).to.be.an(\"object\"); pm.expect(data.status).to.eql(\"published\"); });",
+              "console.log(JSON.stringify({id:data.id, pattern_name:data.pattern_name, is_liked:data.is_liked}));"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "06 GET следующая запись ленты",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": "{{base_url}}/api/load_patterns/{{first_id}}?next=true"
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"HTTP 200\", () => pm.response.to.have.status(200));",
+              "const data = pm.response.json();",
+              "pm.test(\"Следующий паттерн опубликован\", () => { pm.expect(data.status).to.eql(\"published\"); pm.expect(data.id).to.be.greaterThan(Number(pm.collectionVariables.get(\"first_id\"))); });",
+              "console.log(JSON.stringify({id:data.id, pattern_name:data.pattern_name}));"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "07 POST поставить лайк",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": "{{base_url}}/api/load_patterns/{{pattern_id}}/like",
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"value\": 1\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"HTTP 200\", () => pm.response.to.have.status(200));",
+              "const data = pm.response.json();",
+              "console.log(JSON.stringify({message:data.message}));"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "08 DELETE логическое удаление",
+      "request": {
+        "method": "DELETE",
+        "header": [],
+        "url": "{{base_url}}/api/load_patterns/{{pattern_id}}"
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"HTTP 200\", () => pm.response.to.have.status(200));",
+              "const data = pm.response.json();",
+              "console.log(JSON.stringify({message:data.message}));"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "09 POST регистрация",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": "{{base_url}}/api/users/register",
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"username\": \"wad_demo_{{$timestamp}}\",\n  \"email\": \"wad.demo.{{$timestamp}}@example.org\",\n  \"password\": \"{{demo_password}}\"\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"HTTP 201\", () => pm.response.to.have.status(201));",
+              "const data = pm.response.json();",
+              "pm.test(\"Пароль отсутствует в ответе\", () => { pm.expect(data).not.to.have.property(\"password_hash\"); });",
+              "pm.collectionVariables.set(\"registered_username\", data.username)",
+              "console.log(JSON.stringify({id:data.id, username:data.username}));"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "10 POST заглушка входа ЛР-3",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": "{{base_url}}/api/users/login",
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"username\": \"{{registered_username}}\",\n  \"password\": \"{{demo_password}}\"\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"HTTP 200\", () => pm.response.to.have.status(200));",
+              "const data = pm.response.json();",
+              "console.log(JSON.stringify({message:data.message}));"
+            ]
+          }
+        }
+      ]
+    }
+  ]
+}

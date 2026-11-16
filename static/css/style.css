@@ -99,12 +99,33 @@ img, video { display: block; max-width: 100%; }
 }
 
 /* Фильтр */
-.lf-filter { 
-    background: #FFFFFF; 
-    padding: 16px 20px; 
+.lf-filter {
+    background: #FFFFFF;
+    padding: 0 20px;
     flex-shrink: 0;
+    position: relative;
 }
-.lf-filter__form { display: flex; flex-direction: column; gap: 10px; }
+.lf-filter__toggle.lf-btn-pill {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    width: max-content;
+    position: absolute;
+    top: -34px;
+    right: 20px;
+    z-index: 200;
+    padding: 8px 14px;
+    list-style: none;
+    background: #000000;
+    color: #FFFFFF;
+}
+.lf-filter__toggle::-webkit-details-marker { display: none; }
+.lf-filter__form { display: flex; flex-direction: column; gap: 16px; padding: 12px 0 16px; }
+.lf-filter__submit {
+    align-self: flex-end;
+    background: #000000;
+    color: #FFFFFF;
+}
 .lf-filter__label { 
     font-size: 15px; 
     color: #000000; 
@@ -503,6 +524,7 @@ img, video { display: block; max-width: 100%; }
     color: #FFFFFF; 
 }
 .lf-forecast-result__title { 
+    color: #FFFFFF;
     font-size: 20px; 
     font-weight: 700; 
     margin-bottom: 8px; 

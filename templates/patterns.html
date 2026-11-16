@@ -12,12 +12,18 @@
     <header class="lf-header">
         <div class="lf-header__inner"></div>
     </header>
-    <button type="submit" form="filterForm" class="lf-account-btn lf-btn-pill">Найти</button>
-
-    <section class="lf-filter" id="filterSection">
+    <details class="lf-filter" id="filterSection"{% if max_expected is not none %} open{% endif %}>
+        <summary class="lf-filter__toggle lf-btn-pill">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                 stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                <path d="M12.2 2h-.4a2 2 0 0 0-2 2v.2a2 2 0 0 1-1 1.7l-.4.2a2 2 0 0 1-2 0l-.2-.1a2 2 0 0 0-2.7.7l-.2.4a2 2 0 0 0 .7 2.7l.2.1a2 2 0 0 1 1 1.7v.5a2 2 0 0 1-1 1.7l-.2.1a2 2 0 0 0-.7 2.7l.2.4a2 2 0 0 0 2.7.7l.2-.1a2 2 0 0 1 2 0l.4.2a2 2 0 0 1 1 1.7v.2a2 2 0 0 0 2 2h.4a2 2 0 0 0 2-2v-.2a2 2 0 0 1 1-1.7l.4-.2a2 2 0 0 1 2 0l.2.1a2 2 0 0 0 2.7-.7l.2-.4a2 2 0 0 0-.7-2.7l-.2-.1a2 2 0 0 1-1-1.7v-.5a2 2 0 0 1 1-1.7l.2-.1a2 2 0 0 0 .7-2.7l-.2-.4a2 2 0 0 0-2.7-.7l-.2.1a2 2 0 0 1-2 0l-.4-.2a2 2 0 0 1-1-1.7V4a2 2 0 0 0-2-2Z"/>
+                <circle cx="12" cy="12" r="3"/>
+            </svg>
+            <span>Фильтр</span>
+        </summary>
         <form method="get" action="/load_patterns" class="lf-filter__form" id="filterForm">
             <label class="lf-filter__label" for="max_expected">
-                Матожидание до <output class="lf-filter__output">{{ (max_expected // 1000000) if max_expected else 200 }}</output> млн
+                Матожидание до <output class="lf-filter__output" for="max_expected">{{ (max_expected // 1000000) if max_expected else 200 }}</output> млн
             </label>
             <input
                 class="lf-filter__slider"
@@ -28,8 +34,9 @@
                 max="200"
                 value="{{ (max_expected // 1000000) if max_expected else 200 }}"
             >
+            <button type="submit" class="lf-filter__submit lf-btn-pill">Найти</button>
         </form>
-    </section>
+    </details>
 
     <main class="lf-main">
         <div class="lf-grid">
@@ -37,9 +44,9 @@
             <article class="lf-card">
                 <a href="/load_patterns/{{ pattern.id }}" class="lf-card__img-link">
                     <img class="lf-card__img"
-                         src="{{ pattern.image_url if pattern.image_url else '/static/img/default-pattern.jpg' }}"
+                         src="{{ pattern.image_url or '/static/img/uniform.jpg' }}"
                          alt="{{ pattern.pattern_name }}"
-                         onerror="this.src='/static/img/default-pattern.jpg'">
+                         onerror="this.onerror = null; this.src='/static/img/uniform.jpg'">
                 </a>
                 <div class="lf-card__body">
                     <a href="/load_patterns/{{ pattern.id }}" class="lf-card__title">

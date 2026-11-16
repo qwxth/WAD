@@ -37,12 +37,15 @@
 - Полная карточка: изображение, видео, описание, код, применение, RPS, пиковый коэффициент, длительность, ожидаемое число запросов, дата создания.
 - Кнопка «К плитке». Если id не найден — сообщение «Паттерн не найден».
 
+Над каждой страницей есть навигационная цепочка. «Плитка» ведёт к списку, последний элемент показывает текущую страницу.
+
 ## Изображение и видео по умолчанию
-Если `image_url` / `video_url` равны `null` или изображение не загрузилось, показываются файлы из проекта: `src/assets/default-pattern.jpg` и `src/assets/default-pattern.mp4` (компонент `PatternMedia`).
+Если `image_url` или `video_url` пусты либо файл не загрузился, `PatternMedia` показывает `src/assets/default-pattern.svg` или `src/assets/default-pattern.mp4` соответственно.
 
 ## Компоненты и props
 | Компонент | Props |
 |---|---|
+| Breadcrumbs | current, ancestors |
 | PatternMedia | imageUrl, videoUrl, title, showVideo, height |
 | PatternCard | pattern |
 | PatternFilter | values, onChange, onApply, onReset |

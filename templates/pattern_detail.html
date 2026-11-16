@@ -16,12 +16,12 @@
     <main class="lf-reel">
         <div class="lf-reel__viewport">
             <video class="lf-reel__video" autoplay loop muted playsinline
-                   onerror="this.style.display='none'; this.nextElementSibling.style.display='block'">
-                <source src="{{ pattern.video_url if pattern.video_url else '/static/video/default-pattern.mp4' }}" type="video/mp4">
+                   poster="{{ pattern.image_url or '/static/img/uniform.jpg' }}">
+                {% if pattern.video_url %}
+                <source src="{{ pattern.video_url }}" type="video/mp4">
+                {% endif %}
+                <source src="/static/img/default-pattern.mp4" type="video/mp4">
             </video>
-            <img class="lf-reel__video" style="display:none; object-fit:cover;"
-                 src="{{ pattern.image_url if pattern.image_url else '/static/img/default-pattern.jpg' }}"
-                 onerror="this.src='/static/img/default-pattern.jpg'">
             <div class="lf-reel__overlay">
                 <div class="lf-reel__top"></div>
                 <div class="lf-reel__bottom">

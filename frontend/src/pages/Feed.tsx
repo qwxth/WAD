@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { Button, Card } from 'react-bootstrap';
 import { Link } from 'react-router-dom';
+import Breadcrumbs from '../components/Breadcrumbs';
 import PatternMedia from '../components/PatternMedia';
 import { mockPatterns } from '../mocks/patterns';
 import type { LoadPattern } from '../types';
@@ -24,31 +25,34 @@ export default function Feed() {
     setCurrentId(next.id);
   }
 
-  if (!pattern) return <p>Нет данных</p>;
-
   return (
-    <div className="d-flex justify-content-center">
-      <Card className="lf-card" style={{ width: '32rem' }}>
-        <PatternMedia imageUrl={pattern.image_url} videoUrl={pattern.video_url} title={pattern.pattern_name} />
-        <Card.Body>
-          <Card.Title>{pattern.pattern_name}</Card.Title>
-          <Card.Text>
-            RPS: {pattern.requests_per_second.toLocaleString('ru-RU')}
-            <br />
-            Ожидаемое число запросов: {pattern.expected_request_count.toLocaleString('ru-RU')}
-            <br />
-            Лайков: {pattern.likes_count}
-          </Card.Text>
-          <div className="d-flex gap-2">
-            <Button variant="dark" className="lf-btn-pill rounded-pill" onClick={handleNext}>
-              Следующий
-            </Button>
-            <Link to={`/load_patterns/${pattern.id}`} className="btn btn-outline-dark rounded-pill">
-              Подробнее
-            </Link>
-          </div>
-        </Card.Body>
-      </Card>
-    </div>
+    <>
+      <Breadcrumbs current="Лента" ancestors={[{ label: 'Плитка', to: '/load_patterns' }]} />
+      {pattern ? (
+        <div className="d-flex justify-content-center">
+          <Card className="lf-card" style={{ width: '32rem' }}>
+            <PatternMedia imageUrl={pattern.image_url} videoUrl={pattern.video_url} title={pattern.pattern_name} />
+            <Card.Body>
+              <Card.Title as="h1" className="h5">{pattern.pattern_name}</Card.Title>
+              <Card.Text>
+                RPS: {pattern.requests_per_second.toLocaleString('ru-RU')}
+                <br />
+                Ожидаемое число запросов: {pattern.expected_request_count.toLocaleString('ru-RU')}
+                <br />
+                Лайков: {pattern.likes_count}
+              </Card.Text>
+              <div className="d-flex gap-2">
+                <Button variant="dark" className="lf-btn-pill rounded-pill" onClick={handleNext}>
+                  Следующий
+                </Button>
+                <Link to={`/load_patterns/${pattern.id}`} className="btn btn-outline-dark rounded-pill">
+                  Подробнее
+                </Link>
+              </div>
+            </Card.Body>
+          </Card>
+        </div>
+      ) : <p>Нет данных</p>}
+    </>
   );
 }

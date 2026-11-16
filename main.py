@@ -8,7 +8,7 @@ from data.minio_client import ensure_bucket
 import uvicorn
 
 tags_metadata = [
-    {"name": "load_patterns", "description": "Паттерны нагрузки. Чтение - без авторизации, создание/публикация/удаление/лайк - требуют вход через /api/users/login."},
+    {"name": "load_patterns", "description": "Просмотр опубликованных паттернов доступен гостю. Черновик, создание, публикация, удаление и лайк требуют входа через /api/users/login."},
     {"name": "users", "description": "Регистрация, вход (создаёт сессию в Redis + cookie), выход."},
 ]
 
@@ -17,9 +17,8 @@ app = FastAPI(
     description=(
         "REST API для управления паттернами нагрузки.\n\n"
         "Авторизация построена на сессиях: POST /api/users/login создаёт сессию в Redis "
-        "и возвращает httponly cookie session_id. Для вызова защищённых методов в Swagger "
-        "нажмите Authorize и укажите значение cookie, либо просто выполните /login в этом же "
-        "браузере - cookie подставится автоматически."
+        "и возвращает HttpOnly cookie session_id. Выполните вход в Swagger UI, чтобы браузер "
+        "передавал cookie автоматически. В Postman можно передать cookie в заголовке Cookie."
     ),
     version="1.0.0",
     openapi_tags=tags_metadata,

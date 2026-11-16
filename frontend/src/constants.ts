@@ -1,4 +1,4 @@
-import defaultImage from './assets/default-pattern.jpg';
+import defaultImage from './assets/default-pattern.svg';
 import defaultVideo from './assets/default-pattern.mp4';
 import type { PatternFilterValues } from './types';
 

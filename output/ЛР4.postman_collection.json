@@ -1,0 +1,240 @@
+{
+  "info": {
+    "name": "ЛР4 LoadForecast",
+    "description": "Проверка ЛР-4. Установите username и password для учебной учетной записи с опубликованным паттерном и без черновика. Выполните все запросы по порядку. Cookie подставляется только в запросах с явно включенным заголовком Cookie.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    {
+      "key": "base_url",
+      "value": "http://127.0.0.1:8000"
+    },
+    {
+      "key": "username",
+      "value": ""
+    },
+    {
+      "key": "password",
+      "value": ""
+    }
+  ],
+  "item": [
+    {
+      "name": "Вход и получение cookie",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": "{{base_url}}/api/users/login",
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"username\": \"{{username}}\",\n  \"password\": \"{{password}}\"\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"HTTP 200\", () => pm.response.to.have.status(200));",
+              "const data = pm.response.json();",
+              "const setCookie = pm.response.headers.get(\"Set-Cookie\");",
+              "pm.test(\"Выдана HttpOnly cookie session_id\", () => { pm.expect(setCookie).to.match(/^session_id=/); pm.expect(setCookie.toLowerCase()).to.include(\"httponly\"); });",
+              "pm.collectionVariables.set(\"session_id\", setCookie.split(\";\")[0].slice(\"session_id=\".length));",
+              "console.log(JSON.stringify({message:data.message, cookie:\"session_id=…; HttpOnly; SameSite=Lax\"}));"
+            ]
+          }
+        }
+      ],
+      "protocolProfileBehavior": {
+        "disableCookies": true
+      }
+    },
+    {
+      "name": "04 GET список без Cookie",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": "{{base_url}}/api/load_patterns"
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"HTTP 200\", () => pm.response.to.have.status(200));",
+              "const data = pm.response.json();",
+              "pm.test(\"У гостя is_owner = 0\", () => { pm.expect(data.items.length).to.be.greaterThan(0); pm.expect(data.items.every(p => p.is_owner === 0)).to.eql(true); });",
+              "console.log(JSON.stringify({total:data.total, is_owner:data.items.map(p => p.is_owner)}));"
+            ]
+          }
+        }
+      ],
+      "protocolProfileBehavior": {
+        "disableCookies": true
+      }
+    },
+    {
+      "name": "05 GET список с Cookie",
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "Cookie",
+            "value": "session_id={{session_id}}"
+          }
+        ],
+        "url": "{{base_url}}/api/load_patterns"
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"HTTP 200\", () => pm.response.to.have.status(200));",
+              "const data = pm.response.json();",
+              "pm.test(\"Есть паттерн текущего пользователя\", () => { pm.expect(data.items.some(p => p.is_owner === 1)).to.eql(true); });",
+              "console.log(JSON.stringify({total:data.total, is_owner:data.items.map(p => p.is_owner)}));"
+            ]
+          }
+        }
+      ],
+      "protocolProfileBehavior": {
+        "disableCookies": true
+      }
+    },
+    {
+      "name": "Подготовка черновика для публикации",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Cookie",
+            "value": "session_id={{session_id}}"
+          }
+        ],
+        "url": "{{base_url}}/api/load_patterns",
+        "body": {
+          "mode": "formdata",
+          "formdata": [
+            {
+              "key": "pattern_name",
+              "value": "Паттерн для проверки ЛР-4",
+              "type": "text"
+            }
+          ]
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"HTTP 201\", () => pm.response.to.have.status(201));",
+              "const data = pm.response.json();",
+              "pm.collectionVariables.set(\"pattern_id\", data.id)",
+              "console.log(JSON.stringify({id:data.id, status:data.status, creator_id:data.creator_id}));"
+            ]
+          }
+        }
+      ],
+      "protocolProfileBehavior": {
+        "disableCookies": true
+      }
+    },
+    {
+      "name": "06 PUT публикация без Cookie",
+      "request": {
+        "method": "PUT",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": "{{base_url}}/api/load_patterns/{{pattern_id}}/publish",
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"requests_per_second\": 1000,\n  \"peak_multiplier\": 2.5,\n  \"duration_hours\": 12,\n  \"description\": \"Проверка публикации паттерна.\",\n  \"base_cpu_cores\": 8,\n  \"base_ram_gb\": 16\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"HTTP 401\", () => pm.response.to.have.status(401));",
+              "const data = pm.response.json();",
+              "console.log(JSON.stringify({detail:data.detail}));"
+            ]
+          }
+        }
+      ],
+      "protocolProfileBehavior": {
+        "disableCookies": true
+      }
+    },
+    {
+      "name": "07 PUT публикация с Cookie",
+      "request": {
+        "method": "PUT",
+        "header": [
+          {
+            "key": "Cookie",
+            "value": "session_id={{session_id}}"
+          },
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": "{{base_url}}/api/load_patterns/{{pattern_id}}/publish",
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"requests_per_second\": 1000,\n  \"peak_multiplier\": 2.5,\n  \"duration_hours\": 12,\n  \"description\": \"Проверка публикации паттерна.\",\n  \"base_cpu_cores\": 8,\n  \"base_ram_gb\": 16\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"HTTP 200\", () => pm.response.to.have.status(200));",
+              "const data = pm.response.json();",
+              "pm.test(\"Свой черновик опубликован\", () => { pm.expect(data.status).to.eql(\"published\"); pm.expect(data.expected_request_count).to.eql(108000000); });",
+              "console.log(JSON.stringify({id:data.id, creator_id:data.creator_id, status:data.status, requests_per_second:data.requests_per_second, expected_request_count:data.expected_request_count}));"
+            ]
+          }
+        }
+      ],
+      "protocolProfileBehavior": {
+        "disableCookies": true
+      }
+    }
+  ]
+}

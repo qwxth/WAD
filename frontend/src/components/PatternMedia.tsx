@@ -1,4 +1,3 @@
-import type { SyntheticEvent } from 'react';
 import { DEFAULT_IMAGE, DEFAULT_VIDEO } from '../constants';
 
 interface PatternMediaProps {
@@ -9,10 +8,10 @@ interface PatternMediaProps {
   height?: number;
 }
 
-function fallbackToDefault(e: SyntheticEvent<HTMLImageElement>) {
-  const img = e.currentTarget;
-  img.onerror = null; // защита от зацикливания
-  img.src = DEFAULT_IMAGE;
+function fallbackToDefault(element: HTMLImageElement | HTMLVideoElement, fallback: string) {
+  if (element.getAttribute('src') !== fallback) {
+    element.src = fallback;
+  }
 }
 
 export default function PatternMedia({ imageUrl, videoUrl, title, showVideo = true, height = 200 }: PatternMediaProps) {
@@ -21,13 +20,14 @@ export default function PatternMedia({ imageUrl, videoUrl, title, showVideo = tr
       <img
         src={imageUrl || DEFAULT_IMAGE}
         alt={title}
-        onError={fallbackToDefault}
+        onError={(event) => fallbackToDefault(event.currentTarget, DEFAULT_IMAGE)}
         className="w-100"
         style={{ height, objectFit: 'cover' }}
       />
       {showVideo && (
         <video
           src={videoUrl || DEFAULT_VIDEO}
+          onError={(event) => fallbackToDefault(event.currentTarget, DEFAULT_VIDEO)}
           controls
           preload="metadata"
           className="w-100"

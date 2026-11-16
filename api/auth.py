@@ -8,6 +8,7 @@ get_current_user_optional - необязательная (None, если гос�
 """
 import hashlib
 import secrets
+from pathlib import Path
 from typing import Optional
 
 import redis
@@ -26,16 +27,9 @@ redis_client = redis.Redis(host="localhost", port=6379, db=0, decode_responses=T
 # Lua-скрипт выполняется внутри Redis атомарно: читает user_id по ключу сессии
 # и в том же вызове продлевает TTL. Если ключа нет (сессия истекла или удалена),
 # возвращается nil и TTL не создаётся.
-LUA_GET_AND_EXTEND = """
-local val = redis.call('GET', KEYS[1])
-if val then
-    redis.call('EXPIRE', KEYS[1], ARGV[1])
-end
-return val
-"""
+LUA_GET_AND_EXTEND = Path(__file__).with_name("session_get_and_extend.lua").read_text(encoding="utf-8")
 
-# Схема для Swagger UI: рисует кнопку "Authorize" (замочек),
-# куда можно вручную вписать значение cookie session_id для теста защищённых методов.
+# Схема OpenAPI описывает cookie. В браузере её устанавливает обработчик login.
 cookie_scheme = APIKeyCookie(name=SESSION_COOKIE_NAME, auto_error=False)
 
 

@@ -25,15 +25,17 @@
             <div class="lf-form-media-select" style="display:flex; flex-direction:column; gap:12px;">
                 <div class="lf-form-media-item">
                     <img class="lf-form-media-preview"
-                         src="{{ draft.image_url if draft.image_url else '/static/img/default-pattern.jpg' }}"
+                         src="{{ draft.image_url or '/static/img/uniform.jpg' }}"
                          alt="Изображение"
-                         onerror="this.src='/static/img/default-pattern.jpg'">
-                    <label class="lf-form-file-label">{{ draft.image_url.split('/')[-1] if draft.image_url else 'default-pattern.jpg' }}</label>
+                         onerror="this.onerror = null; this.src='/static/img/uniform.jpg'">
+                    <label class="lf-form-file-label">{{ draft.image_url.split('/')[-1] if draft.image_url else 'uniform.jpg' }}</label>
                 </div>
                 <div class="lf-form-media-item">
-                    <video class="lf-form-media-preview" loop muted playsinline
-                           onerror="this.style.display='none'">
-                        <source src="{{ draft.video_url if draft.video_url else '/static/video/default-pattern.mp4' }}" type="video/mp4">
+                    <video class="lf-form-media-preview" loop muted playsinline>
+                        {% if draft.video_url %}
+                        <source src="{{ draft.video_url }}" type="video/mp4">
+                        {% endif %}
+                        <source src="/static/img/default-pattern.mp4" type="video/mp4">
                     </video>
                     <label class="lf-form-file-label">{{ draft.video_url.split('/')[-1] if draft.video_url else 'default-pattern.mp4' }}</label>
                 </div>
